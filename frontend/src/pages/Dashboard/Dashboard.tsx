@@ -1,0 +1,202 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useQuestionHistory } from '../../hooks/useQuestions';
+import { useCategories } from '../../hooks/useCategories';
+import { Card } from '../../components/common/Card';
+import apiClient from '../../api/axios';
+
+// ユーザースキルレベルの型
+interface UserSkillLevel {
+  skill_id: number;
+  skill_name: string;
+  category_name: string;
+  skill_level: number;
+  total_attempts: number;
+  correct_attempts: number;
+}
+
+export const Dashboard = () => {
+  const { user } = useAuth();
+  const { data: recentHistory, isLoading: historyLoading } = useQuestionHistory(5);
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const [skillLevels, setSkillLevels] = useState<UserSkillLevel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ユーザーのスキルレベルを取得
+  useEffect(() => {
+    const fetchUserSkillLevels = async () => {
+      try {
+        // このエンドポイントは実際のバックエンドに合わせて調整が必要
+        const response = await apiClient.get('/users/skill-levels');
+        if (response.data.success && response.data.data) {
+          setSkillLevels(response.data.data);
+        }
+      } catch (error) {
+        console.error('スキルレベルの取得に失敗しました', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserSkillLevels();
+  }, []);
+
+  // スキルレベルをIRT値から分かりやすい表現に変換
+  const getSkillLevelText = (level: number): string => {
+    if (level < -2) return '初心者';
+    if (level < -1) return '入門';
+    if (level < 0) return '基礎';
+    if (level < 1) return '標準';
+    if (level < 2) return '応用';
+    return '熟練';
+  };
+
+  // 正答率を計算
+  const getCorrectRate = (total: number, correct: number): string => {
+    if (total === 0) return '0%';
+    return `${Math.round((correct / total) * 100)}%`;
+  };
+
+  // ロード中表示
+  if ((historyLoading || categoriesLoading || isLoading) && !recentHistory && !categories) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 mb-3">ダッシュボード</h1>
+        <div className="w-20 h-1 bg-primary mx-auto mb-4 rounded-full"></div>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          こんにちは、{user?.username || 'ゲスト'}さん。学習進捗の確認や新しい学習を始めることができます。
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        {/* 学習進捗カード */}
+        <Card title="学習進捗">
+          {skillLevels.length > 0 ? (
+            <div className="space-y-4">
+              {skillLevels.slice(0, 5).map((skill) => (
+                <div key={skill.skill_id} className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{skill.skill_name}</p>
+                    <p className="text-sm text-gray-500">{skill.category_name}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded text-sm font-medium">
+                      {getSkillLevelText(skill.skill_level)}
+                    </span>
+                    <p className="text-sm text-gray-500 mt-1">
+                      正答率: {getCorrectRate(skill.total_attempts, skill.correct_attempts)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              
+              {skillLevels.length > 5 && (
+                <div className="text-right mt-2">
+                  <Link to="/profile" className="text-primary hover:underline text-sm">
+                    すべての進捗を見る →
+                  </Link>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-gray-500">まだ学習記録がありません。</p>
+              <p className="text-gray-500 mt-2">
+                <Link to="/subjects" className="text-primary hover:underline">
+                  学習を始める
+                </Link>
+                と、ここに進捗が表示されます。
+              </p>
+            </div>
+          )}
+        </Card>
+
+        {/* 最近の学習履歴カード */}
+        <Card title="最近の学習履歴">
+          {recentHistory && recentHistory.length > 0 ? (
+            <div className="space-y-4">
+              {recentHistory.map((item: any) => (
+                <div key={item.question_id} className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex justify-between items-start">
+                    <div className="max-w-xs">
+                      <p className="font-medium truncate">{item.question_text}</p>
+                      <div className="flex mt-1 space-x-2">
+                        <span className="bg-primary bg-opacity-10 text-primary px-2 py-0.5 rounded-full text-xs">
+                          {item.category?.name || '不明'}
+                        </span>
+                        {item.skill && (
+                          <span className="bg-secondary bg-opacity-10 text-secondary px-2 py-0.5 rounded-full text-xs">
+                            {item.skill.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {item.is_correct !== null && (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.is_correct 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {item.is_correct ? '正解' : '不正解'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(item.asked_at).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+              
+              <div className="text-right mt-2">
+                <Link to="/history" className="text-primary hover:underline text-sm">
+                  すべての履歴を見る →
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-gray-500">まだ学習履歴がありません。</p>
+              <p className="text-gray-500 mt-2">
+                <Link to="/subjects" className="text-primary hover:underline">
+                  学習を始める
+                </Link>
+                と、ここに履歴が表示されます。
+              </p>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-2 border-b border-gray-200">おすすめの教科</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {categories?.slice(0, 3).map((category) => (
+          <Card
+            key={category.id}
+            title={category.name}
+            className="h-full"
+            onClick={() => {}}
+          >
+            <p className="text-gray-600 mb-4">{category.description}</p>
+            <div className="mt-auto">
+              <Link 
+                to={`/subjects/${category.id}`} 
+                className="text-primary hover:text-primary-dark font-medium"
+              >
+                詳細を見る →
+              </Link>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
