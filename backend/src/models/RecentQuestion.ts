@@ -1,55 +1,89 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, RelationId } from 'typeorm';
 import { User } from './User';
 import { Category } from './Category';
 import { Skill } from './Skill';
 
-@Entity('question_history')
+@Entity({ name: 'question_history' })
 export class RecentQuestion {
-  @PrimaryGeneratedColumn({ name: 'history_id' })
-  historyId!: number;
+    @PrimaryGeneratedColumn('increment')
+    historyId!: number;
 
-  @Column()
-  user_id!: number;
+    @ManyToOne(() => User, user => user.recentQuestions)
+    @JoinColumn({ name: 'user_id' })
+    user!: User;
 
-  @ManyToOne(() => User, user => user.recentQuestions)
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
+    @RelationId((rq: RecentQuestion) => rq.user)
+    userId!: number;
 
-  @Column({ length: 64 })
-  question_hash!: string;
+    @Column({ length: 255 })
+    questionHash!: string;
 
-  @Column({ type: 'text' })
-  question_text!: string;
+    @Column({ type: 'text' })
+    questionText!: string;
 
-  @Column({ type: 'text', nullable: true })
-  answer_text!: string;
+    // 問題の要約（簡潔な説明、類似問題検出に使用）
+    @Column({ length: 255, nullable: true })
+    questionSummary!: string;
 
-  @Column({ nullable: true })
-  is_correct!: boolean;
+    // 問題の抽象ハッシュ（キーワードやコンセプト、類似問題検出に使用）
+    @Column({ length: 255, nullable: true })
+    abstractHash!: string;
 
-  @Column({ type: 'float', nullable: true })
-  difficulty!: number;
+    @Column({ type: 'float' })
+    difficulty!: number;
 
-  @Column({ nullable: true })
-  category_id!: number;
+    // 選択肢（JSONとして保存）
+    @Column({ type: 'text', nullable: true })
+    options!: string;
 
-  @ManyToOne(() => Category, category => category.recentQuestions)
-  @JoinColumn({ name: 'category_id' })
-  category!: Category;
+    // 正解の選択肢のインデックス
+    @Column({ nullable: true })
+    correctOptionIndex!: number;
 
-  @Column({ nullable: true })
-  skill_id!: number;
+    // 解説
+    @Column({ type: 'text', nullable: true })
+    explanation!: string;
 
-  @ManyToOne(() => Skill, skill => skill.recentQuestions)
-  @JoinColumn({ name: 'skill_id' })
-  skill!: Skill;
+    // ユーザーの回答（複数選択式の場合はインデックス）
+    @Column({ nullable: true, name: 'user_answer_index' })
+    userAnswerIndex!: number;
 
-  @CreateDateColumn({ name: 'asked_at' })
-  askedAt!: Date;
+    // 正解かどうか
+    @Column({ nullable: true })
+    isCorrect!: boolean;
 
-  @Column({ name: 'answered_at', type: 'timestamp with time zone', nullable: true })
-  answeredAt!: Date;
+    // 質問が表示された時間
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    askedAt!: Date;
 
-  @Column({ name: 'time_taken', nullable: true })
-  timeTaken!: number;
+    // 回答された時間（nullの場合は未回答）
+    @Column({ type: 'timestamp', nullable: true })
+    answeredAt!: Date;
+
+    // タイムゾーン情報を含む回答時間
+    @Column({ type: 'timestamp with time zone', nullable: true })
+    answeredAtTz!: Date;
+
+    // データベースには存在するが現在使用していない可能性のあるカラムのマッピング
+    @Column({ type: 'text', nullable: true })
+    answerText!: string;
+
+    @Column({ type: 'integer', nullable: true })
+    timeTaken!: number;
+
+    // カテゴリとのリレーション
+    @ManyToOne(() => Category)
+    @JoinColumn({ name: 'category_id' })
+    category!: Category;
+
+    @RelationId((rq: RecentQuestion) => rq.category)
+    categoryId!: number;
+
+    // スキルとのリレーション
+    @ManyToOne(() => Skill)
+    @JoinColumn({ name: 'skill_id' })
+    skill!: Skill;
+
+    @RelationId((rq: RecentQuestion) => rq.skill)
+    skillId!: number;
 }

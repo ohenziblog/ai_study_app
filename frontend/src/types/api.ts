@@ -74,6 +74,13 @@ export interface Question {
   difficulty: number;
 }
 
+// 4択問題の型（Question型を拡張）
+export interface MultipleChoiceQuestion extends Question {
+  options: string[];
+  correct_option_index: number;
+  explanation: string;
+}
+
 // 回答関連の型
 export interface AnswerRequest {
   questionId: number;
@@ -82,11 +89,42 @@ export interface AnswerRequest {
   timeTaken?: number;
 }
 
+// 選択式回答のリクエスト
+export interface MultipleChoiceAnswerRequest {
+  questionId: number;
+  selectedOptionIndex: number;
+  timeTaken?: number;
+}
+
 export interface AnswerResponse {
   question: {
     id: number;
     text: string;
     answer: string;
+    isCorrect: boolean;
+    askedAt: string;
+    answeredAt: string;
+    timeTaken: number;
+  };
+  skillLevel?: {
+    skillId: number;
+    skillName: string;
+    level: number;
+    confidence: number;
+    totalAttempts: number;
+    correctAttempts: number;
+  };
+}
+
+// 選択式回答のレスポンス
+export interface MultipleChoiceAnswerResponse {
+  question: {
+    id: number;
+    text: string;
+    options: string[];
+    selected_option_index: number;
+    correct_option_index: number;
+    explanation: string;
     isCorrect: boolean;
     askedAt: string;
     answeredAt: string;

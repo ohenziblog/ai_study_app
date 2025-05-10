@@ -22,7 +22,7 @@ const questionController = {
         );
       }
 
-      const userId = req.user.user_id;
+      const userId = req.user.userId;
       
       // より堅牢な実装 - NaNを明示的にチェック
       let categoryId = undefined;
@@ -68,7 +68,7 @@ const questionController = {
         );
       }
 
-      const userId = req.user.user_id;
+      const userId = req.user.userId;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
       const questionHistory = await questionService.getUserRecentQuestions(userId, limit);

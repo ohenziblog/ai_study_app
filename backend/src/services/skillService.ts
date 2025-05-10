@@ -2,11 +2,13 @@ import type { Skill } from '../models/Skill';
 
 const { AppDataSource: skillDataSource } = require('../config/DataSource');
 const { Skill: SkillEntity } = require('../models/Skill');
+const { Category } = require('../models/Category');
 const { UserSkillLevel } = require('../models/UserSkillLevel');
 const skillServiceLogger = require('../utils/logger').default;
 
 // リポジトリの取得
 const skillRepository = skillDataSource.getRepository(SkillEntity);
+const categoryRepository = skillDataSource.getRepository(Category);
 const userSkillLevelRepository = skillDataSource.getRepository(UserSkillLevel);
 
 /**
@@ -16,10 +18,10 @@ const userSkillLevelRepository = skillDataSource.getRepository(UserSkillLevel);
  */
 const formatSkill = (skill: Skill) => {
   return {
-    id: skill.skill_id,
-    name: skill.skill_name,
+    id: skill.skillId,
+    name: skill.skillName,
     description: skill.description,
-    category_id: skill.category_id,
+    categoryId: skill.categoryId,
     difficulty: skill.difficultyBase
   };
 };
@@ -35,7 +37,7 @@ const skillService = {
   findAll: async () => {
     try {
       const skills = await skillRepository.find({
-        order: { skill_name: 'ASC' },
+        order: { skillName: 'ASC' },
         relations: ['category']
       });
 
@@ -43,8 +45,8 @@ const skillService = {
       return skills.map((skill: Skill) => ({
         ...formatSkill(skill),
         category: skill.category ? {
-          id: skill.category.category_id,
-          name: skill.category.category_name
+          id: skill.category.categoryId,
+          name: skill.category.categoryName
         } : null
       }));
     } catch (error) {
@@ -59,7 +61,7 @@ const skillService = {
   findById: async (id: number) => {
     try {
       const skill = await skillRepository.findOne({
-        where: { skill_id: id },
+        where: { skillId: id },
         relations: ['category']
       });
 
@@ -68,8 +70,8 @@ const skillService = {
       return {
         ...formatSkill(skill),
         category: skill.category ? {
-          id: skill.category.category_id,
-          name: skill.category.category_name
+          id: skill.category.categoryId,
+          name: skill.category.categoryName
         } : null
       };
     } catch (error) {
@@ -84,8 +86,9 @@ const skillService = {
   findByCategory: async (categoryId: number) => {
     try {
       const skills = await skillRepository.find({
-        where: { category_id: categoryId },
-        order: { skill_name: 'ASC' }
+        where: { category: { categoryId: categoryId } },
+        order: { skillName: 'ASC' },
+        relations: ['category']
       });
       
       return skills.map(formatSkill);
@@ -102,9 +105,10 @@ const skillService = {
     try {
       return await skillRepository.findOne({
         where: { 
-          skill_name: name,
-          category_id: categoryId
-        }
+          skillName: name,
+          category: { categoryId: categoryId }
+        },
+        relations: ['category']
       });
     } catch (error) {
       skillServiceLogger.error(`名前: "${name}", カテゴリーID: ${categoryId} のスキル取得中にエラーが発生しました: ${error}`);
@@ -118,7 +122,7 @@ const skillService = {
   hasRelatedUserSkillLevels: async (skillId: number) => {
     try {
       const count = await userSkillLevelRepository.count({
-        where: { skill_id: skillId }
+        where: { skill: { skillId: skillId } }
       });
       return count > 0;
     } catch (error) {
@@ -130,7 +134,7 @@ const skillService = {
   /**
    * 新しいスキルを作成
    */
-  create: async (skillData: Partial<Skill>) => {
+  create: async (skillData: Partial<any>) => {
     try {
       // 難易度の範囲を0.5-4.5に制限
       if (skillData.difficultyBase !== undefined) {
@@ -139,20 +143,37 @@ const skillService = {
         skillData.difficultyBase = 2.0; // デフォルト難易度
       }
 
-      const skill = skillRepository.create(skillData);
+      // カテゴリーの取得
+      let category = null;
+      if (skillData.category_id) {
+        category = await categoryRepository.findOneBy({ categoryId: skillData.category_id });
+        if (!category) {
+          throw new Error(`カテゴリID ${skillData.category_id} が見つかりません`);
+        }
+      }
+
+      // 新しいスキルデータの作成
+      const newSkillData: any = {
+        skillName: skillData.skill_name,
+        description: skillData.description,
+        difficultyBase: skillData.difficultyBase,
+        category: category
+      };
+
+      const skill = skillRepository.create(newSkillData);
       const savedSkill = await skillRepository.save(skill);
       
       // カテゴリー情報を含めて返す
       const fullSkill = await skillRepository.findOne({
-        where: { skill_id: savedSkill.skill_id },
+        where: { skillId: savedSkill.skillId },
         relations: ['category']
       });
       
       return {
         ...formatSkill(fullSkill),
         category: fullSkill.category ? {
-          id: fullSkill.category.category_id,
-          name: fullSkill.category.category_name
+          id: fullSkill.category.categoryId,
+          name: fullSkill.category.categoryName
         } : null
       };
     } catch (error) {
@@ -164,15 +185,27 @@ const skillService = {
   /**
    * 指定されたIDのスキルを更新
    */
-  update: async (id: number, skillData: Partial<Skill>) => {
+  update: async (id: number, skillData: Partial<any>) => {
     try {
-      const skill = await skillRepository.findOneBy({ skill_id: id });
+      const skill = await skillRepository.findOne({
+        where: { skillId: id },
+        relations: ['category']
+      });
+      
       if (!skill) return null;
       
       // 更新可能なフィールドの反映
-      if (skillData.skill_name !== undefined) skill.skill_name = skillData.skill_name;
+      if (skillData.skill_name !== undefined) skill.skillName = skillData.skill_name;
       if (skillData.description !== undefined) skill.description = skillData.description;
-      if (skillData.category_id !== undefined) skill.category_id = skillData.category_id;
+      
+      // カテゴリーの更新
+      if (skillData.category_id !== undefined) {
+        const category = await categoryRepository.findOneBy({ categoryId: skillData.category_id });
+        if (!category) {
+          throw new Error(`カテゴリID ${skillData.category_id} が見つかりません`);
+        }
+        skill.category = category;
+      }
       
       // 難易度の範囲を0.5-4.5に制限
       if (skillData.difficultyBase !== undefined) {
@@ -183,15 +216,15 @@ const skillService = {
       
       // カテゴリー情報を含めて返す
       const fullSkill = await skillRepository.findOne({
-        where: { skill_id: savedSkill.skill_id },
+        where: { skillId: savedSkill.skillId },
         relations: ['category']
       });
       
       return {
         ...formatSkill(fullSkill),
         category: fullSkill.category ? {
-          id: fullSkill.category.category_id,
-          name: fullSkill.category.category_name
+          id: fullSkill.category.categoryId,
+          name: fullSkill.category.categoryName
         } : null
       };
     } catch (error) {
@@ -205,7 +238,7 @@ const skillService = {
    */
   delete: async (id: number) => {
     try {
-      const skill = await skillRepository.findOneBy({ skill_id: id });
+      const skill = await skillRepository.findOneBy({ skillId: id });
       if (!skill) return false;
       
       await skillRepository.remove(skill);

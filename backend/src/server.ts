@@ -1,14 +1,15 @@
 // src/server.ts
 // 環境変数の初期化を共通モジュールから行う
-require('./config/env');
+const envConfig = require('./config/env');
 require('reflect-metadata');
 
 const loggerService = require('./utils/logger').default;
 const { AppDataSource } = require('./config/DataSource');
 const app = require('./app');
 
-const PORT = process.env.PORT || 3001;
-const NODE_ENV = process.env.NODE_ENV || 'development';
+// 設定ファイルから環境変数を取得
+const PORT = envConfig.PORT;
+const NODE_ENV = envConfig.NODE_ENV;
 
 // 現在の環境を表示
 loggerService.info(`🌍 実行環境: ${NODE_ENV}`);
@@ -38,8 +39,6 @@ AppDataSource.initialize()
     });
   })
   .catch((error: Error) => {
-    loggerService.error('❌ データベース接続に失敗しました');
-    loggerService.error(error);
+    loggerService.error(`❌ データベース接続に失敗しました: ${error.message}`);
+    process.exit(1);
   });
-
-module.exports = app;

@@ -5,7 +5,7 @@ import { RecentQuestion } from './RecentQuestion';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
-  user_id!: number;
+  userId!: number;
 
   @Column({ unique: true, length: 50 })
   username!: string;
@@ -13,25 +13,25 @@ export class User {
   @Column({ unique: true, length: 255 })
   email!: string;
 
-  @Column({ name: 'password_hash', length: 255 })
+  @Column({ length: 255 })
   passwordHash!: string;
 
-  @Column({ name: 'first_name', length: 50, nullable: true })
+  @Column({ length: 50, nullable: true })
   firstName!: string;
 
-  @Column({ name: 'last_name', length: 50, nullable: true })
+  @Column({ length: 50, nullable: true })
   lastName!: string;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt!: Date;
 
-  @Column({ name: 'last_login_at', type: 'timestamp with time zone', nullable: true })
+  @Column({ type: 'timestamp with time zone', nullable: true })
   lastLoginAt!: Date;
 
-  @Column({ name: 'is_active', default: true })
+  @Column({ default: true })
   isActive!: boolean;
 
   @Column({ length: 20, default: 'student' })

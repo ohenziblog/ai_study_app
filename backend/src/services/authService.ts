@@ -31,9 +31,15 @@ const authService = {
   register: async (userData: RegisterDTO): Promise<{ user: SafeUser; token: string }> => {
     try {
       // メールアドレスの重複チェック
-      const existingUser = await userRepository.findOneBy({ email: userData.email });
-      if (existingUser) {
+      const existingUserByEmail = await userRepository.findOneBy({ email: userData.email });
+      if (existingUserByEmail) {
         throw new Error('このメールアドレスは既に使用されています');
+      }
+
+      // ユーザー名の重複チェック
+      const existingUserByUsername = await userRepository.findOneBy({ username: userData.username });
+      if (existingUserByUsername) {
+        throw new Error('このユーザー名は既に使用されています');
       }
 
       // パスワードのハッシュ化
@@ -66,13 +72,24 @@ const authService = {
         user: createSafeUser(savedUser),
         token
       };
-    } catch (error) {
+    } catch (error: any) {
       // エラーログ記録（開発環境ではエラー詳細を表示、本番環境では抑制）
       if (process.env.NODE_ENV === 'production') {
         logger.error(`ユーザー登録処理でエラーが発生しました`);
       } else {
         logger.error(`ユーザー登録中にエラーが発生しました: ${error}`);
       }
+
+      // データベースの一意性制約違反エラーを適切なエラーメッセージに変換
+      if (error.code === '23505') {
+        // PostgreSQLの一意性制約違反のエラーコード
+        if (error.detail?.includes('(username)')) {
+          throw new Error('このユーザー名は既に使用されています');
+        } else if (error.detail?.includes('(email)')) {
+          throw new Error('このメールアドレスは既に使用されています');
+        }
+      }
+      
       throw error;
     }
   },

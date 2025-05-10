@@ -5,7 +5,7 @@ export {};
 require('./env');
 const { DataSource } = require('typeorm');
 const path = require('path');
-// dotenvConfigは不要になった
+const { SnakeNamingStrategy } = require('typeorm-naming-strategies');
 
 const { User } = require('../models/User');
 const { Category } = require('../models/Category');
@@ -27,6 +27,10 @@ const AppDataSource = new DataSource({
   migrations: [path.join(__dirname, '../migrations/**/*.{js,ts}')],
   subscribers: [],
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  // キャッシュを無効化して常に最新のメタデータを使用
+  cache: false,
+  // 公式のSnakeNamingStrategyを使用
+  namingStrategy: new SnakeNamingStrategy()
 });
 
 // モジュールとして明示的にエクスポート

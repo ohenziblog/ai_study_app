@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Layout } from './components/layout/Layout';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // ページコンポーネント
 import { Login } from './pages/Auth/Login';
@@ -32,6 +34,7 @@ function App() {
     <Router>
       <AuthProvider>
         <Layout>
+          <ToastContainer />
           <Routes>
             {/* 認証ページ */}
             <Route path="/login" element={<Login />} />

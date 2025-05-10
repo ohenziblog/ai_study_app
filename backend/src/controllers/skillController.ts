@@ -181,7 +181,7 @@ const skillController = {
       }
 
       // カテゴリーが変更される場合は存在確認
-      if (req.body.category_id && req.body.category_id !== skill.category_id) {
+      if (req.body.category_id && req.body.category_id !== skill.category?.categoryId) {
         const category = await categoryService.findById(parseInt(req.body.category_id));
         if (!category) {
           return res.status(HTTP_STATUS.BAD_REQUEST).json(
@@ -191,11 +191,11 @@ const skillController = {
       }
 
       // 同じカテゴリー内での重複スキル名チェック
-      if (req.body.skill_name && req.body.skill_name !== skill.skill_name) {
-        const categoryId = req.body.category_id ? parseInt(req.body.category_id) : skill.category_id;
+      if (req.body.skill_name && req.body.skill_name !== skill.skillName) {
+        const categoryId = req.body.category_id ? parseInt(req.body.category_id) : skill.category?.categoryId;
         const existingSkill = await skillService.findByNameAndCategory(req.body.skill_name, categoryId);
         
-        if (existingSkill && existingSkill.skill_id !== id) {
+        if (existingSkill && existingSkill.skillId !== id) {
           return res.status(HTTP_STATUS.CONFLICT).json(
             createApiResponse(false, '同じカテゴリー内に同名のスキルが既に存在します')
           );

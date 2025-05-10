@@ -1,34 +1,34 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, Unique, RelationId } from 'typeorm';
 import { Category } from './Category';
 import { UserSkillLevel } from './UserSkillLevel';
 import { RecentQuestion } from './RecentQuestion';
 
 @Entity('skills')
-@Unique(['skill_name', 'category_id'])
+@Unique(['skillName', 'category'])
 export class Skill {
   @PrimaryGeneratedColumn()
-  skill_id!: number;
+  skillId!: number;
 
   @Column({ length: 100 })
-  skill_name!: string;
+  skillName!: string;
 
   @Column({ type: 'text', nullable: true })
   description!: string;
 
-  @Column()
-  category_id!: number;
-
   @ManyToOne(() => Category, category => category.skills)
-  @JoinColumn({ name: 'category_id' })
+  @JoinColumn({ name: 'category_id'})
   category!: Category;
 
-  @Column({ name: 'difficulty_base', type: 'float', default: 0.0 })
+  @RelationId((skill: Skill) => skill.category)
+  categoryId!: number;
+
+  @Column({ type: 'float', default: 0.0 })
   difficultyBase!: number;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt!: Date;
 
   @OneToMany(() => UserSkillLevel, userSkillLevel => userSkillLevel.skill)
