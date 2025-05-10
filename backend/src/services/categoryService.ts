@@ -17,10 +17,10 @@ const skillRepository = categoryDataSource.getRepository(SkillEntity);
  */
 const formatCategory = (category: Category) => {
   return {
-    id: category.category_id,
-    name: category.category_name,
+    id: category.categoryId,
+    name: category.categoryName,
     description: category.description,
-    parent_id: category.parent_id,
+    parent_id: category.parentId,
     level: category.level
   };
 };
@@ -32,10 +32,10 @@ const formatCategory = (category: Category) => {
  */
 const formatSkill = (skill: Skill) => {
   return {
-    id: skill.skill_id,
-    name: skill.skill_name,
+    id: skill.skillId,
+    name: skill.skillName,
     description: skill.description,
-    category_id: skill.category_id,
+    category_id: skill.categoryId,
     difficulty: skill.difficultyBase
   };
 };
@@ -51,7 +51,7 @@ const categoryService = {
   findAll: async () => {
     try {
       const categories = await categoryRepository.find({
-        order: { category_name: 'ASC' }
+        order: { categoryName: 'ASC' }
       });
       // Categoryパラメータに型を追加
       return categories.map((category: Category) => formatCategory(category));
@@ -66,7 +66,7 @@ const categoryService = {
    */
   findById: async (id: number) => {
     try {
-      return await categoryRepository.findOneBy({ category_id: id });
+      return await categoryRepository.findOneBy({ categoryId: id });
     } catch (error) {
       categoryServiceLogger.error(`ID: ${id} のカテゴリー取得中にエラーが発生しました: ${error}`);
       throw error;
@@ -78,7 +78,7 @@ const categoryService = {
    */
   findByName: async (name: string) => {
     try {
-      return await categoryRepository.findOneBy({ category_name: name });
+      return await categoryRepository.findOneBy({ categoryName: name });
     } catch (error) {
       categoryServiceLogger.error(`名前: "${name}" のカテゴリー取得中にエラーが発生しました: ${error}`);
       throw error;
@@ -91,8 +91,11 @@ const categoryService = {
   findSkillsByCategory: async (categoryId: number) => {
     try {
       const skills = await skillRepository.find({
-        where: { category_id: categoryId },
-        order: { skill_name: 'ASC' }
+        where: { 
+          category: { categoryId: categoryId } 
+        },
+        relations: ['category'],
+        order: { skillName: 'ASC' }
       });
       // Skillパラメータに型を追加
       return skills.map((skill: Skill) => formatSkill(skill));
@@ -108,16 +111,16 @@ const categoryService = {
   create: async (categoryData: Partial<Category>) => {
     try {
       // 親カテゴリーが指定されている場合はレベルを設定
-      if (categoryData.parent_id) {
+      if (categoryData.parentId) {
         const parentCategory = await categoryRepository.findOneBy({ 
-          category_id: categoryData.parent_id 
+          categoryId: categoryData.parentId 
         });
         
         if (parentCategory) {
           categoryData.level = parentCategory.level + 1;
           
           // 将来的にltreeパスを設定する場合はここで実装
-          // categoryData.path = parentCategory.path ? `${parentCategory.path}.${categoryData.parent_id}` : `${categoryData.parent_id}`;
+          // categoryData.path = parentCategory.path ? `${parentCategory.path}.${categoryData.parentId}` : `${categoryData.parentId}`;
         }
       } else {
         categoryData.level = 0;
@@ -139,26 +142,26 @@ const categoryService = {
    */
   update: async (id: number, categoryData: Partial<Category>) => {
     try {
-      const category = await categoryRepository.findOneBy({ category_id: id });
+      const category = await categoryRepository.findOneBy({ categoryId: id });
       if (!category) return null;
       
       // 更新可能なフィールドの反映
-      if (categoryData.category_name !== undefined) category.category_name = categoryData.category_name;
+      if (categoryData.categoryName !== undefined) category.categoryName = categoryData.categoryName;
       if (categoryData.description !== undefined) category.description = categoryData.description;
       
       // 親カテゴリーの変更は階層構造に影響するため慎重に処理
-      if (categoryData.parent_id !== undefined && categoryData.parent_id !== category.parent_id) {
+      if (categoryData.parentId !== undefined && categoryData.parentId !== category.parentId) {
         // 循環参照チェック（自分自身や子孫を親にはできない）
-        if (categoryData.parent_id === id) {
+        if (categoryData.parentId === id) {
           throw new Error('カテゴリーを自分自身の子にすることはできません');
         }
         
-        category.parent_id = categoryData.parent_id;
+        category.parentId = categoryData.parentId;
         
         // 親カテゴリーがある場合はレベルを更新
-        if (categoryData.parent_id) {
+        if (categoryData.parentId) {
           const parentCategory = await categoryRepository.findOneBy({ 
-            category_id: categoryData.parent_id 
+            categoryId: categoryData.parentId 
           });
           
           if (parentCategory) {
@@ -184,7 +187,7 @@ const categoryService = {
    */
   delete: async (id: number) => {
     try {
-      const category = await categoryRepository.findOneBy({ category_id: id });
+      const category = await categoryRepository.findOneBy({ categoryId: id });
       if (!category) return false;
       
       await categoryRepository.remove(category);

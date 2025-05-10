@@ -1,20 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, RelationId } from 'typeorm';
 import { Skill } from './Skill';
 import { RecentQuestion } from './RecentQuestion';
 
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn()
-  category_id!: number;
+  categoryId!: number;
 
   @Column({ length: 100 })
-  category_name!: string;
+  categoryName!: string;
 
   @Column({ type: 'text', nullable: true })
   description!: string;
 
-  @Column({ nullable: true })
-  parent_id!: number;
+  @RelationId((category: Category) => category.parent)
+  parentId!: number;
 
   @ManyToOne(() => Category, category => category.children)
   @JoinColumn({ name: 'parent_id' })
@@ -29,13 +29,13 @@ export class Category {
   @Column({ type: 'ltree', nullable: true })
   path!: string;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn()
   updatedAt!: Date;
 
-  @Column({ name: 'search_vector', type: 'tsvector', nullable: true })
+  @Column({ type: 'tsvector', nullable: true })
   searchVector!: string;
 
   @OneToMany(() => Skill, skill => skill.category)

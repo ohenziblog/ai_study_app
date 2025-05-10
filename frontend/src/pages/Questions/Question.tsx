@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { useQuestion, useSubmitAnswer } from '../../hooks/useQuestions';
+import { 
+  useQuestion, 
+  useSubmitAnswer, 
+  useSubmitMultipleChoiceAnswer,
+  isMultipleChoiceQuestion
+} from '../../hooks/useQuestions';
 import { Button } from '../../components/common/Button';
+import type { MultipleChoiceQuestion } from '../../types/api';
 
 export const Question = () => {
   const [searchParams] = useSearchParams();
@@ -10,11 +16,14 @@ export const Question = () => {
   
   const { data: question, isLoading, error, refetch } = useQuestion(categoryId, skillId);
   const submitAnswerMutation = useSubmitAnswer();
+  const submitMultipleChoiceMutation = useSubmitMultipleChoiceAnswer();
   const navigate = useNavigate();
   
   const [answer, setAnswer] = useState('');
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
   const answerTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -22,14 +31,19 @@ export const Question = () => {
   useEffect(() => {
     if (question && !isLoading) {
       setStartTime(Date.now());
-      // テキストエリアにフォーカス
-      if (answerTextareaRef.current) {
+      setSelectedOption(null);
+      setShowExplanation(false);
+      setFeedback(null);
+      
+      // テキストエリアにフォーカス（自由回答形式の場合）
+      if (!isMultipleChoiceQuestion(question) && answerTextareaRef.current) {
         answerTextareaRef.current.focus();
       }
     }
   }, [question, isLoading]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // 自由回答形式での回答提出
+  const handleSubmitFreeForm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question || isSubmitting || !answer.trim()) return;
     
@@ -71,6 +85,54 @@ export const Question = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // 選択肢を選んだときのハンドラ
+  const handleOptionSelect = async (optionIndex: number) => {
+    if (isSubmitting || showExplanation) return;
+    
+    setSelectedOption(optionIndex);
+    setIsSubmitting(true);
+    
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 秒単位
+    
+    try {
+      if (isMultipleChoiceQuestion(question)) {
+        const result = await submitMultipleChoiceMutation.mutateAsync({
+          questionId: question.question_id,
+          selectedOptionIndex: optionIndex,
+          timeTaken,
+        });
+        
+        const isCorrect = result.question.isCorrect;
+        
+        setFeedback({
+          type: isCorrect ? 'success' : 'error',
+          message: isCorrect 
+            ? '正解です！' 
+            : '不正解です。'
+        });
+        
+        // 解説を表示
+        setShowExplanation(true);
+      }
+    } catch (err: any) {
+      setFeedback({
+        type: 'error',
+        message: err.message || '回答の送信中にエラーが発生しました。'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 次の問題に進む
+  const handleNextQuestion = () => {
+    setAnswer('');
+    setSelectedOption(null);
+    setFeedback(null);
+    setShowExplanation(false);
+    refetch();
   };
 
   if (isLoading) {
@@ -126,46 +188,98 @@ export const Question = () => {
         <p className="text-gray-800 whitespace-pre-line">{question.question_text}</p>
       </div>
       
-      <form onSubmit={handleSubmit}>
+      {/* 問題タイプに応じて適切なUIを表示 */}
+      {isMultipleChoiceQuestion(question) ? (
+        // 4択問題UI
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">回答</h3>
-          <textarea
-            ref={answerTextareaRef}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary min-h-[150px]"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="ここに回答を入力してください..."
-            required
-            disabled={isSubmitting}
-          />
-        </div>
-        
-        {feedback && (
-          <div className={`p-4 mb-6 rounded-md ${
-            feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
-          }`}>
-            <p>{feedback.message}</p>
+          <h3 className="text-xl font-bold text-gray-800 mb-4">選択肢</h3>
+          <div className="space-y-3">
+            {question.options.map((option, index) => (
+              <button
+                key={index}
+                className={`w-full text-left p-4 rounded-md border transition-colors ${
+                  selectedOption === index
+                    ? selectedOption === question.correct_option_index
+                      ? 'bg-green-100 border-green-500'
+                      : 'bg-red-100 border-red-500'
+                    : selectedOption !== null && index === question.correct_option_index
+                    ? 'bg-green-100 border-green-500'
+                    : 'bg-white border-gray-300 hover:border-primary'
+                }`}
+                onClick={() => handleOptionSelect(index)}
+                disabled={isSubmitting || selectedOption !== null}
+              >
+                <span className="mr-3 inline-block w-6 h-6 text-center rounded-full bg-gray-200">
+                  {String.fromCharCode(65 + index)}
+                </span>
+                {option}
+              </button>
+            ))}
           </div>
-        )}
-        
-        <div className="flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate(categoryId ? `/subjects/${categoryId}` : '/subjects')}
-          >
-            学習をやめる
-          </Button>
           
-          <Button
-            type="submit"
-            isLoading={isSubmitting}
-            disabled={isSubmitting || !answer.trim()}
-          >
-            回答を送信
-          </Button>
+          {/* 解説表示エリア */}
+          {showExplanation && isMultipleChoiceQuestion(question) && (
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+              <h4 className="font-bold text-blue-800 mb-2">解説</h4>
+              <p className="text-gray-800">{question.explanation}</p>
+            </div>
+          )}
+          
+          {/* 次の問題ボタン */}
+          {selectedOption !== null && (
+            <div className="mt-6 flex justify-end">
+              <Button
+                type="button"
+                onClick={handleNextQuestion}
+              >
+                次の問題へ
+              </Button>
+            </div>
+          )}
         </div>
-      </form>
+      ) : (
+        // 自由回答問題UI
+        <form onSubmit={handleSubmitFreeForm}>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">回答</h3>
+            <textarea
+              ref={answerTextareaRef}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary min-h-[150px]"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="ここに回答を入力してください..."
+              required
+              disabled={isSubmitting}
+            />
+          </div>
+          
+          {feedback && (
+            <div className={`p-4 mb-6 rounded-md ${
+              feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
+            }`}>
+              <p>{feedback.message}</p>
+            </div>
+          )}
+          
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate(categoryId ? `/subjects/${categoryId}` : '/subjects')}
+            >
+              学習をやめる
+            </Button>
+            
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={isSubmitting || !answer.trim()}
+            >
+              回答を送信
+            </Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 };

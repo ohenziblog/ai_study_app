@@ -58,6 +58,21 @@ const authController = {
         );
       }
       
+      // データベースエラーの詳細なハンドリング
+      if (error.code === '23505') { // PostgreSQLの一意性制約違反のエラーコード
+        let message = 'ユーザー情報が重複しています';
+        
+        if (error.detail?.includes('(username)')) {
+          message = 'このユーザー名は既に使用されています';
+        } else if (error.detail?.includes('(email)')) {
+          message = 'このメールアドレスは既に使用されています';
+        }
+        
+        return res.status(HTTP_STATUS.CONFLICT).json(
+          createApiResponse(false, message)
+        );
+      }
+      
       // その他のエラー
       return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
         createApiResponse(false, 'サーバーエラーが発生しました')

@@ -1,6 +1,6 @@
 // src/app.ts
 // 環境変数の初期化を共通モジュールから行う
-require('./config/env');
+const envConfig = require('./config/env');
 // 型定義のみをインポート
 import type { Request, Response, NextFunction } from 'express';
 
@@ -21,7 +21,7 @@ const skillRoutes = require('./routes/skillRoutes');
 const app = express();
 
 // === 🌐 ミドルウェア定義 ===
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: envConfig.CORS_ORIGIN }));
 app.use(express.json());
 app.use(morgan('dev')); // リクエストログ出力
 
