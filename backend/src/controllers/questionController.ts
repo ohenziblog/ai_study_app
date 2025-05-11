@@ -28,16 +28,16 @@ const questionController = {
       let categoryId = undefined;
       let skillId = undefined;
       
-      if (req.query.category_id) {
-        const parsedCategoryId = parseInt(req.query.category_id as string);
+      if (req.query.categoryId) {
+        const parsedCategoryId = parseInt(req.query.categoryId as string);
         // NaNの場合は明示的にundefinedのままにする
         if (!Number.isNaN(parsedCategoryId)) {
           categoryId = parsedCategoryId;
         }
       }
       
-      if (req.query.skill_id) {
-        const parsedSkillId = parseInt(req.query.skill_id as string);
+      if (req.query.skillId) {
+        const parsedSkillId = parseInt(req.query.skillId as string);
         if (!Number.isNaN(parsedSkillId)) {
           skillId = parsedSkillId;
         }
@@ -57,7 +57,7 @@ const questionController = {
   },
   
   /**
-   * ユーザーの最近の問題履歴を取得する
+   * 問題履歴を取得する
    * @route GET /questions/history
    */
   getQuestionHistory: async (req: AuthRequest, res: Response) => {
@@ -71,10 +71,10 @@ const questionController = {
       const userId = req.user.userId;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
-      const questionHistory = await questionService.getUserRecentQuestions(userId, limit);
+      const history = await questionService.getQuestionHistory(userId, limit);
       
       return res.status(HTTP_STATUS.OK).json(
-        createApiResponse(true, '問題履歴を取得しました', questionHistory)
+        createApiResponse(true, '問題履歴を取得しました', history)
       );
     } catch (error: any) {
       logger.error(`問題履歴取得中にエラーが発生しました: ${error.message}`);

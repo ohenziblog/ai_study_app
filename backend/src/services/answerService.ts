@@ -33,10 +33,13 @@ const answerService = {
     await queryRunner.startTransaction();
     
     try {
-      // 問題を取得
+      // 問題を取得 - TypeORMのリレーションを使用した正しいクエリ方法
       const question = await recentQuestionRepository.findOne({
-        where: { historyId: questionId, user_id: userId },
-        relations: ['skill']
+        where: { 
+          historyId: questionId, 
+          user: { userId: userId } // userId を直接使用せず、リレーションを通してクエリ
+        },
+        relations: ['skill', 'user'] // userリレーションも含める
       });
       
       if (!question) {
@@ -76,16 +79,24 @@ const answerService = {
         // ユーザーのスキルレベルを取得または作成
         let userSkillLevel = await userSkillLevelRepository.findOne({
           where: {
-            user_id: userId,
-            skill_id: question.skillId
-          }
+            user: { userId: userId },
+            skill: { skillId: question.skillId }
+          },
+          relations: ['user', 'skill']
         });
         
         if (!userSkillLevel) {
           // ユーザーのスキルレベルが存在しない場合は新規作成
+          const user = await dataSource.getRepository('User').findOne({ where: { userId: userId } });
+          const skill = await dataSource.getRepository('Skill').findOne({ where: { skillId: question.skillId } });
+          
+          if (!user || !skill) {
+            throw new Error('ユーザーまたはスキルが見つかりません');
+          }
+          
           userSkillLevel = userSkillLevelRepository.create({
-            user_id: userId,
-            skill_id: question.skillId,
+            user: user,
+            skill: skill,
             skillLevel: 0.0, // 初期能力値
             confidence: 1.0,
             totalAttempts: 0,
@@ -135,8 +146,8 @@ const answerService = {
             id: question.historyId,
             text: question.questionText,
             options: parsedOptions,
-            selected_option_index: selectedOptionIndex,
-            correct_option_index: question.correctOptionIndex,
+            selectedOptionIndex: selectedOptionIndex,
+            correctOptionIndex: question.correctOptionIndex,
             explanation: question.explanation,
             isCorrect: question.isCorrect,
             askedAt: question.askedAt,
@@ -144,7 +155,7 @@ const answerService = {
             timeTaken: question.timeTaken
           },
           skillLevel: {
-            skillId: userSkillLevel.skill_id,
+            skillId: userSkillLevel.skillId,
             skillName: question.skill ? question.skill.skillName : 'Unknown',
             level: userSkillLevel.skillLevel,
             confidence: userSkillLevel.confidence,
@@ -161,8 +172,8 @@ const answerService = {
             id: question.historyId,
             text: question.questionText,
             options: parsedOptions,
-            selected_option_index: selectedOptionIndex,
-            correct_option_index: question.correctOptionIndex,
+            selectedOptionIndex: selectedOptionIndex,
+            correctOptionIndex: question.correctOptionIndex,
             explanation: question.explanation,
             isCorrect: isCorrect,
             askedAt: question.askedAt,
@@ -199,10 +210,13 @@ const answerService = {
     await queryRunner.startTransaction();
     
     try {
-      // 問題を取得
+      // 問題を取得 - TypeORMのリレーションを使用した正しいクエリ方法
       const question = await recentQuestionRepository.findOne({
-        where: { historyId: questionId, user_id: userId },
-        relations: ['skill']
+        where: { 
+          historyId: questionId, 
+          user: { userId: userId } // userId を直接使用せず、リレーションを通してクエリ
+        },
+        relations: ['skill', 'user'] // userリレーションも含める
       });
       
       if (!question) {
@@ -228,16 +242,24 @@ const answerService = {
         // ユーザーのスキルレベルを取得または作成
         let userSkillLevel = await userSkillLevelRepository.findOne({
           where: {
-            user_id: userId,
-            skill_id: question.skillId
-          }
+            user: { userId: userId },
+            skill: { skillId: question.skillId }
+          },
+          relations: ['user', 'skill']
         });
         
         if (!userSkillLevel) {
           // ユーザーのスキルレベルが存在しない場合は新規作成
+          const user = await dataSource.getRepository('User').findOne({ where: { userId: userId } });
+          const skill = await dataSource.getRepository('Skill').findOne({ where: { skillId: question.skillId } });
+          
+          if (!user || !skill) {
+            throw new Error('ユーザーまたはスキルが見つかりません');
+          }
+          
           userSkillLevel = userSkillLevelRepository.create({
-            user_id: userId,
-            skill_id: question.skillId,
+            user: user,
+            skill: skill,
             skillLevel: 0.0, // 初期能力値
             confidence: 1.0,
             totalAttempts: 0,
@@ -293,7 +315,7 @@ const answerService = {
             timeTaken: question.timeTaken
           },
           skillLevel: {
-            skillId: userSkillLevel.skill_id,
+            skillId: userSkillLevel.skillId,
             skillName: question.skill ? question.skill.skillName : 'Unknown',
             level: userSkillLevel.skillLevel,
             confidence: userSkillLevel.confidence,

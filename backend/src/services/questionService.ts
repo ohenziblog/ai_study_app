@@ -136,12 +136,13 @@ const questionService = {
       
       await recentQuestionRepository.save(newQuestion);
       
+      // 返り値をキャメルケースに統一
       return {
-        question_id: newQuestion.historyId,
-        question_hash: generatedQuestion.hash,
-        question_text: generatedQuestion.question,
+        questionId: newQuestion.historyId,
+        questionHash: generatedQuestion.hash,
+        questionText: generatedQuestion.question,
         options: generatedQuestion.options,
-        correct_option_index: generatedQuestion.correctAnswerIndex,
+        correctOptionIndex: generatedQuestion.correctAnswerIndex,
         explanation: generatedQuestion.explanation,
         category: {
           id: category.categoryId,
@@ -480,12 +481,13 @@ const questionService = {
       
       await recentQuestionRepository.save(newQuestion);
       
+      // 返り値をキャメルケースに統一
       return {
-        question_id: newQuestion.historyId,
-        question_hash: questionHash,
-        question_text: template.question,
+        questionId: newQuestion.historyId,
+        questionHash: questionHash,
+        questionText: template.question,
         options: template.options,
-        correct_option_index: template.correctIndex,
+        correctOptionIndex: template.correctIndex,
         explanation: `この問題は${skill.skillName}の基本的な理解を確認するためのものです。`,
         category: {
           id: category.categoryId,
@@ -518,17 +520,17 @@ const questionService = {
         relations: ['category', 'skill', 'user']
       });
 
-      // マッピング処理
+      // マッピング処理をキャメルケースに統一
       return questions.map((q: QuestionHistory) => ({
-        question_id: q.historyId,
-        question_hash: q.questionHash,
-        question_text: q.questionText,
-        asked_at: q.askedAt,
-        answered_at: q.answeredAt,
-        is_correct: q.isCorrect,
+        questionId: q.historyId,
+        questionHash: q.questionHash,
+        questionText: q.questionText,
+        askedAt: q.askedAt,
+        answeredAt: q.answeredAt,
+        isCorrect: q.isCorrect,
         // 選択肢があれば含める
         options: q.options ? JSON.parse(q.options) : [],
-        correct_option_index: q.correctOptionIndex !== undefined ? q.correctOptionIndex : -1,
+        correctOptionIndex: q.correctOptionIndex !== undefined ? q.correctOptionIndex : -1,
         explanation: q.explanation || '',
         category: q.category ? {
           id: q.category.categoryId,

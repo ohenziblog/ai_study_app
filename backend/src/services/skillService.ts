@@ -145,16 +145,16 @@ const skillService = {
 
       // カテゴリーの取得
       let category = null;
-      if (skillData.category_id) {
-        category = await categoryRepository.findOneBy({ categoryId: skillData.category_id });
+      if (skillData.categoryId) { 
+        category = await categoryRepository.findOneBy({ categoryId: skillData.categoryId });
         if (!category) {
-          throw new Error(`カテゴリID ${skillData.category_id} が見つかりません`);
+          throw new Error(`カテゴリID ${skillData.categoryId} が見つかりません`);
         }
       }
 
       // 新しいスキルデータの作成
       const newSkillData: any = {
-        skillName: skillData.skill_name,
+        skillName: skillData.skillName,
         description: skillData.description,
         difficultyBase: skillData.difficultyBase,
         category: category
@@ -195,14 +195,14 @@ const skillService = {
       if (!skill) return null;
       
       // 更新可能なフィールドの反映
-      if (skillData.skill_name !== undefined) skill.skillName = skillData.skill_name;
+      if (skillData.skillName !== undefined) skill.skillName = skillData.skillName;
       if (skillData.description !== undefined) skill.description = skillData.description;
       
       // カテゴリーの更新
-      if (skillData.category_id !== undefined) {
-        const category = await categoryRepository.findOneBy({ categoryId: skillData.category_id });
+      if (skillData.categoryId !== undefined) {
+        const category = await categoryRepository.findOneBy({ categoryId: skillData.categoryId });
         if (!category) {
-          throw new Error(`カテゴリID ${skillData.category_id} が見つかりません`);
+          throw new Error(`カテゴリID ${skillData.categoryId} が見つかりません`);
         }
         skill.category = category;
       }

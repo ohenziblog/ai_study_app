@@ -41,10 +41,10 @@ export const SubjectDetail = () => {
   const handleStartLearning = () => {
     // 選択されたスキルがあれば、そのスキルの問題ページへ
     if (selectedSkillId) {
-      navigate(`/question?skill_id=${selectedSkillId}&category_id=${categoryId}`);
+      navigate(`/question?skillId=${selectedSkillId}&categoryId=${categoryId}`);
     } else {
       // なければカテゴリー全体の問題ページへ
-      navigate(`/question?category_id=${categoryId}`);
+      navigate(`/question?categoryId=${categoryId}`);
     }
   };
 

@@ -46,9 +46,9 @@ export const QuestionHistory = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {history.map((item: any) => (
-                <tr key={item.question_id}>
+                <tr key={item.questionId}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(item.asked_at).toLocaleString()}
+                    {new Date(item.askedAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary bg-opacity-10 text-primary">
@@ -61,16 +61,16 @@ export const QuestionHistory = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    <div className="max-w-xs truncate">{item.question_text}</div>
+                    <div className="max-w-xs truncate">{item.questionText}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {item.is_correct !== null ? (
+                    {item.isCorrect !== null ? (
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        item.is_correct 
+                        item.isCorrect 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {item.is_correct ? '正解' : '不正解'}
+                        {item.isCorrect ? '正解' : '不正解'}
                       </span>
                     ) : (
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">

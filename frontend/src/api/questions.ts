@@ -20,8 +20,8 @@ export const questionApi = {
     let url = '/questions';
     const params: Record<string, string> = {};
     
-    if (categoryId) params.category_id = categoryId.toString();
-    if (skillId) params.skill_id = skillId.toString();
+    if (categoryId) params.categoryId = categoryId.toString();
+    if (skillId) params.skillId = skillId.toString();
     
     const response = await apiClient.get<ApiResponse<Question | MultipleChoiceQuestion>>(url, { params });
     

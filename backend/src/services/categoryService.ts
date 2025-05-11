@@ -20,7 +20,7 @@ const formatCategory = (category: Category) => {
     id: category.categoryId,
     name: category.categoryName,
     description: category.description,
-    parent_id: category.parentId,
+    parentId: category.parentId,
     level: category.level
   };
 };
@@ -35,7 +35,7 @@ const formatSkill = (skill: Skill) => {
     id: skill.skillId,
     name: skill.skillName,
     description: skill.description,
-    category_id: skill.categoryId,
+    categoryId: skill.categoryId,
     difficulty: skill.difficultyBase
  };
 };
