@@ -1,9 +1,13 @@
 import axios from 'axios';
 import crypto from 'crypto';
-// dotenvの設定を読み込む（configオブジェクトをインポートするのではなく）
-require('../../config/env');
+// 設定を正しく読み込む
+const config = require('../../config/env');
 // CommonJSスタイルでエクスポートされたloggerを正しく読み込む
 const logger = require('../../utils/logger').default;
+
+// モジュールレベルの定数として設定値を保存
+const DEEPSEEK_API_KEY = config.DEEPSEEK_API_KEY;
+const DEEPSEEK_API_ENDPOINT = config.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
 
 /**
  * キャッシュマップの管理とキャッシュ処理を行うユーティリティ関数
@@ -63,12 +67,12 @@ const deepseekService = {
   ) => {
     try {
       // AIがアクセス可能なAPIエンドポイントがない場合は開発用生成ロジックを使用
-      if (!process.env.DEEPSEEK_API_KEY) {
+      if (!DEEPSEEK_API_KEY) {
         return deepseekService.mockGenerateQuestion(category, skill, targetDifficulty);
       }
 
       // DeepSeek APIエンドポイント（適切なエンドポイントに変更してください）
-      const apiEndpoint = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+      const apiEndpoint = DEEPSEEK_API_ENDPOINT;
       
       // 類似問題を避けるためのコンテキストを構築
       const avoidanceContext = deepseekService.buildAvoidanceContext(
@@ -124,7 +128,7 @@ ${avoidanceContext}
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+            'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
           }
         }
       );
@@ -222,11 +226,11 @@ ${avoidanceContext}
         1000,
         async () => {
           // AIがアクセス可能なAPIエンドポイントがない場合は簡易要約を返す
-          if (!process.env.DEEPSEEK_API_KEY) {
+          if (!DEEPSEEK_API_KEY) {
             return deepseekService.createSimpleSummary(questionText);
           }
 
-          const apiEndpoint = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+          const apiEndpoint = DEEPSEEK_API_ENDPOINT;
           
           const prompt = `
 以下の問題文と選択肢を30文字以内で要約してください。主要なトピックと問われている内容を簡潔に表現してください。
@@ -254,7 +258,7 @@ ${options.join('\n')}
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
               }
             }
           );
@@ -295,12 +299,12 @@ ${options.join('\n')}
         cacheKey,
         1000,
         async () => {
-          // AIがアクセス可能なAPIエンドポイントがない場合は簡易ハッシュを返す
-          if (!process.env.DEEPSEEK_API_KEY) {
+          // AIがアクセス可能なAPIエンドポイントがない場合は簡易要約を返す
+          if (!DEEPSEEK_API_KEY) {
             return deepseekService.createSimpleAbstractHash(questionText);
           }
 
-          const apiEndpoint = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+          const apiEndpoint = DEEPSEEK_API_ENDPOINT;
           
           const prompt = `
 以下の問題から主要なコンセプトとキーワードを3〜5個抽出し、カンマ区切りで出力してください。これらのキーワードは問題の本質を表し、類似問題を特定するために使用されます。
@@ -332,7 +336,7 @@ ${options.join('\n')}
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
               }
             }
           );
@@ -408,7 +412,7 @@ ${options.join('\n')}
     // カテゴリとスキルに基づいたテンプレート問題のセット
     const questionTemplates = [
       {
-        question: `${category.category_name}の分野において、${skill.skill_name}の主要な特徴は次のうちどれですか？`,
+        question: `${category.categoryName}の分野において、${skill.skillName}の主要な特徴は次のうちどれですか？`,
         options: [
           `理論的枠組みの一貫性`,
           `実践的応用の幅広さ`,
@@ -416,10 +420,10 @@ ${options.join('\n')}
           `概念の抽象度の高さ`
         ],
         correctAnswerIndex: 1,
-        explanation: `${skill.skill_name}は、その理論的基盤よりも実践的な応用範囲の広さが特徴的です。様々な実務的な状況で活用されることで、その有用性が証明されています。`
+        explanation: `${skill.skillName}は、その理論的基盤よりも実践的な応用範囲の広さが特徴的です。様々な実務的な状況で活用されることで、その有用性が証明されています。`
       },
       {
-        question: `${skill.skill_name}を理解する上で最も重要な概念は何ですか？`,
+        question: `${skill.skillName}を理解する上で最も重要な概念は何ですか？`,
         options: [
           `構造的一貫性`,
           `機能的多様性`,
@@ -427,10 +431,10 @@ ${options.join('\n')}
           `適用範囲の柔軟性`
         ],
         correctAnswerIndex: 3,
-        explanation: `${skill.skill_name}の最も重要な側面は、様々な状況に柔軟に適用できる点です。この適用範囲の柔軟性によって、異なる問題設定においても効果的に活用できます。`
+        explanation: `${skill.skillName}の最も重要な側面は、様々な状況に柔軟に適用できる点です。この適用範囲の柔軟性によって、異なる問題設定においても効果的に活用できます。`
       },
       {
-        question: `${category.category_name}における${skill.skill_name}の応用で、最も効果的なアプローチは次のうちどれですか？`,
+        question: `${category.categoryName}における${skill.skillName}の応用で、最も効果的なアプローチは次のうちどれですか？`,
         options: [
           `段階的な適用と検証`,
           `包括的な理論分析`,
@@ -438,7 +442,7 @@ ${options.join('\n')}
           `統合的なシステム設計`
         ],
         correctAnswerIndex: 0,
-        explanation: `${skill.skill_name}を${category.category_name}に応用する際は、段階的なアプローチが最も効果的です。各段階での適用結果を検証しながら進めることで、最適な結果を得ることができます。`
+        explanation: `${skill.skillName}を${category.categoryName}に応用する際は、段階的なアプローチが最も効果的です。各段階での適用結果を検証しながら進めることで、最適な結果を得ることができます。`
       }
     ];
     
@@ -449,10 +453,10 @@ ${options.join('\n')}
     let adjustedTemplate = { ...template };
     if (targetDifficulty > 3) {
       // 難しい問題にするための調整
-      adjustedTemplate.question = `${category.category_name}の高度な視点から見た場合、${skill.skill_name}における最も本質的な要素は次のうちどれですか？`;
+      adjustedTemplate.question = `${category.categoryName}の高度な視点から見た場合、${skill.skillName}における最も本質的な要素は次のうちどれですか？`;
     } else if (targetDifficulty < 2) {
       // 簡単な問題にするための調整
-      adjustedTemplate.question = `${category.category_name}の基本として、${skill.skill_name}の主な目的は次のうちどれですか？`;
+      adjustedTemplate.question = `${category.categoryName}の基本として、${skill.skillName}の主な目的は次のうちどれですか？`;
     }
     
     // ハッシュを生成

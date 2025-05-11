@@ -37,7 +37,7 @@ const formatSkill = (skill: Skill) => {
     description: skill.description,
     category_id: skill.categoryId,
     difficulty: skill.difficultyBase
-  };
+ };
 };
 
 /**
@@ -91,9 +91,7 @@ const categoryService = {
   findSkillsByCategory: async (categoryId: number) => {
     try {
       const skills = await skillRepository.find({
-        where: { 
-          category: { categoryId: categoryId } 
-        },
+        where: { category: {categoryId: categoryId }},
         relations: ['category'],
         order: { skillName: 'ASC' }
       });
