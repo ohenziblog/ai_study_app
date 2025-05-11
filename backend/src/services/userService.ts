@@ -29,7 +29,7 @@ const userService = {
    */
   findById: async (id: number): Promise<User | null> => {
     try {
-      return await userRepository.findOneBy({ user_id: id });
+      return await userRepository.findOneBy({ userId: id });
     } catch (error) {
       logger.error(`ID: ${id} のユーザー取得中にエラーが発生しました: ${error}`);
       throw error;
@@ -66,7 +66,7 @@ const userService = {
    */
   update: async (id: number, userData: Partial<User>): Promise<User | null> => {
     try {
-      const user = await userRepository.findOneBy({ user_id: id });
+      const user = await userRepository.findOneBy({ userId: id });
       if (!user) return null;
       
       // ユーザーデータを更新
@@ -83,7 +83,7 @@ const userService = {
    */
   delete: async (id: number): Promise<boolean> => {
     try {
-      const user = await userRepository.findOneBy({ user_id: id });
+      const user = await userRepository.findOneBy({ userId: id });
       if (!user) return false;
       
       await userRepository.remove(user);

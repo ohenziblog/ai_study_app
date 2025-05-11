@@ -7,7 +7,6 @@ import {
   isMultipleChoiceQuestion
 } from '../../hooks/useQuestions';
 import { Button } from '../../components/common/Button';
-import type { MultipleChoiceQuestion } from '../../types/api';
 
 export const Question = () => {
   const [searchParams] = useSearchParams();
