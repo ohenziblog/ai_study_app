@@ -25,6 +25,20 @@ interface QuestionSummary {
 }
 
 /**
+ * キャッシュキーを生成する（10分単位）
+ * @param userId ユーザーID
+ * @returns キャッシュキー
+ */
+const generateCacheKey = (userId: number): string => {
+  const now = new Date();
+  // 分を10分単位に丸める（0-9 -> 0, 10-19 -> 10, 20-29 -> 20, ...）
+  const minutes = Math.floor(now.getMinutes() / 10) * 10;
+  // HH:MM形式に整形（分は10分単位）
+  const timeString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return `user_${userId}_${timeString}`;
+};
+
+/**
  * 問題に関する操作を提供するサービス
  */
 const questionService = {
@@ -42,9 +56,6 @@ const questionService = {
   ): Promise<QuestionWithChoices> => {
     try {
       // カテゴリとスキルの選択
-      console.log(`ユーザーID: ${userId}`);
-      console.log(`categoryId: ${categoryId}`);
-      console.log(`skillId: ${skillId}`);
       const { category, skill } = await questionService.selectCategoryAndSkill(userId, categoryId, skillId);
       
       if (!category || !skill) {
@@ -169,19 +180,18 @@ const questionService = {
     try {
       // 全てのデータを一度に取得することで、複数のクエリ実行を避ける
       const allRecentQuestions = await recentQuestionRepository.find({
-        select: ['questionSummary', 'abstractHash', 'askedAt'],
+        select: ['historyId', 'questionSummary', 'abstractHash', 'askedAt'],
         where: { user: { userId: userId } },
         order: { askedAt: 'DESC' },
         take: 50, // 必要な最大数
         relations: ['category', 'skill']
       });
-      
-      // キャッシュキー（ユーザーIDとタイムスタンプの組み合わせ）
-      const cacheKey = `user_${userId}_${new Date().toISOString().substring(0, 16)}`; // 10分単位でキャッシュを更新
+      // キャッシュキー（ユーザーIDと10分単位のタイムスタンプの組み合わせ）
+      const cacheKey = generateCacheKey(userId); // 10分単位のキャッシュキーを生成
       const dataCache = (global as any).pastDataCache || new Map();
       (global as any).pastDataCache = dataCache;
       
-      // キャッシュにデータがある場合は返す（短期間に同じユーザーが複数の問題を解く場合に有効）
+      // キャッシュにデータがある場合は返す（10分以内に同じユーザーが複数の問題を解く場合に有効）
       if (dataCache.has(cacheKey)) {
         logger.debug('過去問題データをキャッシュから取得しました');
         return dataCache.get(cacheKey);
@@ -195,12 +205,11 @@ const questionService = {
           text: q.questionSummary,
           category: q.category ? q.category.categoryName : '不明'
         }));
-      
       // 2. 中期の問題（6-20件目）- カテゴリ別の構造化キーワード
       const midRangeQuestions = allRecentQuestions.slice(5, 20);
       let structuredKeywords: Record<string, string[]> = {};
       
-      // カテゴリごとにキーワードを集約
+     // カテゴリごとにキーワードを集約
       midRangeQuestions.forEach((q: any) => {
         if (q.abstractHash && !q.abstractHash.includes('-') && q.category) {
           const categoryName = q.category.categoryName;
@@ -320,15 +329,11 @@ const questionService = {
           where: { skillId: skillId },
           relations: ['category']
         });
-        console.log(`skillId: ${skillId}, skill: ${skill}`);
-        console.log(`skill.categoryId: ${skill?.category?.categoryId}`);
         if (!skill) {
           throw new Error(`指定されたスキルID: ${skillId} が見つかりませんでした`);
         }
         
         // スキルが指定されたカテゴリに属していることを確認
-        console.log(`categoryId: ${categoryId}, skill.category.categoryId: ${skill.category?.categoryId}`);
-        console.log(`category.categoryId: ${category.categoryId}`);
         if (categoryId && skill.category?.categoryId !== category.categoryId) {
           throw new Error(`指定されたスキルはこのカテゴリに属していません`);
         }
