@@ -23,10 +23,10 @@ const answerController = {
         );
       }
 
-      const { question_id, answer_index, timeTaken } = req.body as AnswerRequest & { timeTaken?: number };
+      const { questionId, answerIndex, timeTaken } = req.body;
       
       // 基本的なバリデーション
-      if (question_id === undefined || answer_index === undefined) {
+      if (questionId === undefined || answerIndex === undefined) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           createApiResponse(false, '問題IDと選択肢のインデックスは必須です')
         );
@@ -35,9 +35,9 @@ const answerController = {
       const userId = req.user.userId;
       
       const result = await answerService.recordMultipleChoiceAnswer(
-        question_id,
+        questionId,
         userId,
-        answer_index,
+        answerIndex,
         timeTaken || 0
       );
       
@@ -78,9 +78,9 @@ const answerController = {
       const { questionId, answerText, isCorrect, timeTaken } = req.body;
       
       // 基本的なバリデーション
-      if (!questionId || answerText === undefined || isCorrect === undefined) {
+      if (questionId === undefined || !answerText) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          createApiResponse(false, '問題ID、回答テキスト、正解フラグは必須です')
+          createApiResponse(false, '問題IDと回答テキストは必須です')
         );
       }
 
@@ -101,7 +101,8 @@ const answerController = {
       logger.error(`回答記録中にエラーが発生しました: ${error.message}`);
       
       // クライアントエラーの処理
-      if (error.message.includes('見つかりません') || error.message.includes('既に回答済み')) {
+      if (error.message.includes('見つかりません') || 
+          error.message.includes('既に回答済み')) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           createApiResponse(false, error.message)
         );

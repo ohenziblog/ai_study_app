@@ -11,8 +11,8 @@ import type { MultipleChoiceQuestion } from '../../types/api';
 
 export const Question = () => {
   const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get('category_id') ? parseInt(searchParams.get('category_id')!) : undefined;
-  const skillId = searchParams.get('skill_id') ? parseInt(searchParams.get('skill_id')!) : undefined;
+  const categoryId = searchParams.get('categoryId') ? parseInt(searchParams.get('categoryId')!) : undefined;
+  const skillId = searchParams.get('skillId') ? parseInt(searchParams.get('skillId')!) : undefined;
   
   const { data: question, isLoading, error, refetch } = useQuestion(categoryId, skillId);
   const submitAnswerMutation = useSubmitAnswer();
@@ -44,7 +44,8 @@ export const Question = () => {
 
   // 自由回答形式での回答提出
   const handleSubmitFreeForm = async (e: React.FormEvent) => {
-    e.preventDefault();
+
+   e.preventDefault();
     if (!question || isSubmitting || !answer.trim()) return;
     
     const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 秒単位
@@ -58,13 +59,12 @@ export const Question = () => {
       const isCorrect = true; // 仮の値
       
       const result = await submitAnswerMutation.mutateAsync({
-        questionId: question.question_id,
+        questionId: question.questionId,
         answerText: answer,
         isCorrect,
         timeTaken,
       });
-      
-      setFeedback({
+     setFeedback({
         type: result.question.isCorrect ? 'success' : 'error',
         message: result.question.isCorrect 
           ? '正解です！次の問題に進みましょう。' 
@@ -99,7 +99,7 @@ export const Question = () => {
     try {
       if (isMultipleChoiceQuestion(question)) {
         const result = await submitMultipleChoiceMutation.mutateAsync({
-          questionId: question.question_id,
+          questionId: question.questionId,
           selectedOptionIndex: optionIndex,
           timeTaken,
         });
@@ -185,7 +185,7 @@ export const Question = () => {
       
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">問題</h2>
-        <p className="text-gray-800 whitespace-pre-line">{question.question_text}</p>
+        <p className="text-gray-800 whitespace-pre-line">{question.questionText}</p>
       </div>
       
       {/* 問題タイプに応じて適切なUIを表示 */}
@@ -199,10 +199,10 @@ export const Question = () => {
                 key={index}
                 className={`w-full text-left p-4 rounded-md border transition-colors ${
                   selectedOption === index
-                    ? selectedOption === question.correct_option_index
+                    ? selectedOption === question.correctOptionIndex
                       ? 'bg-green-100 border-green-500'
                       : 'bg-red-100 border-red-500'
-                    : selectedOption !== null && index === question.correct_option_index
+                    : selectedOption !== null && index === question.correctOptionIndex
                     ? 'bg-green-100 border-green-500'
                     : 'bg-white border-gray-300 hover:border-primary'
                 }`}

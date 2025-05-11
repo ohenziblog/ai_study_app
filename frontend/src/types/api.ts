@@ -41,7 +41,7 @@ export interface Category {
   id: number;
   name: string;
   description: string;
-  parent_id?: number;
+  parentId?: number;
   level: number;
 }
 
@@ -50,7 +50,7 @@ export interface Skill {
   id: number;
   name: string;
   description: string;
-  category_id: number;
+  categoryId: number;
   difficulty: number;
   category?: {
     id: number;
@@ -60,9 +60,9 @@ export interface Skill {
 
 // 問題関連の型
 export interface Question {
-  question_id: number;
-  question_hash: string;
-  question_text: string;
+  questionId: number;
+  questionHash: string;
+  questionText: string;
   category?: {
     id: number;
     name: string;
@@ -77,7 +77,7 @@ export interface Question {
 // 4択問題の型（Question型を拡張）
 export interface MultipleChoiceQuestion extends Question {
   options: string[];
-  correct_option_index: number;
+  correctOptionIndex: number;
   explanation: string;
 }
 
@@ -122,8 +122,8 @@ export interface MultipleChoiceAnswerResponse {
     id: number;
     text: string;
     options: string[];
-    selected_option_index: number;
-    correct_option_index: number;
+    selectedOptionIndex: number;
+    correctOptionIndex: number;
     explanation: string;
     isCorrect: boolean;
     askedAt: string;

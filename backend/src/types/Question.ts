@@ -2,9 +2,9 @@
 
 // 問題の基本情報
 export interface Question {
-  question_id: number;
-  question_hash: string;
-  question_text: string;
+  questionId: number;
+  questionHash: string;
+  questionText: string;
   category: {
     id: number;
     name: string;
@@ -19,7 +19,7 @@ export interface Question {
 // 選択肢付き問題
 export interface QuestionWithChoices extends Question {
   options: string[];
-  correct_option_index: number;
+  correctOptionIndex: number;
   explanation: string;
 }
 
@@ -44,22 +44,21 @@ export interface QuestionHistory {
   answerText?: string;      // 回答テキスト
   answeredAtTz?: Date;      // タイムゾーン付きの回答日時
   timeTaken?: number;       // 回答にかかった時間
-  selectedOptionIndex?: number; // 選択された選択肢のインデックス
   category?: any;           // リレーションで取得されるカテゴリ情報
   skill?: any;              // リレーションで取得されるスキル情報
 }
 
 // クライアントに返す問題履歴の情報
 export interface QuestionHistoryResponse {
-  question_id: number;
-  question_hash: string;
-  question_text: string;
+  questionId: number;
+  questionHash: string;
+  questionText: string;
   options?: string[];        // パース済みの選択肢
-  correct_option_index?: number;
+  correctOptionIndex?: number;
   explanation?: string;
-  is_correct?: boolean;
-  asked_at: Date;
-  answered_at?: Date;
+  isCorrect?: boolean;
+  askedAt: Date;
+  answeredAt?: Date;
   category: {
     id: number;
     name: string;
@@ -72,25 +71,25 @@ export interface QuestionHistoryResponse {
 
 // ユーザーからの回答リクエスト
 export interface AnswerRequest {
-  question_id: number;
-  answer_index: number;
+  questionId: number;
+  answerIndex: number;
 }
 
 // 回答結果のレスポンス
 export interface AnswerResponse {
-  question_id: number;
-  is_correct: boolean;
-  correct_option_index: number;
+  questionId: number;
+  isCorrect: boolean;
+  correctOptionIndex: number;
   explanation: string;
-  skill_progress?: {
-    new_level: number;
-    level_change: number;
+  skillProgress?: {
+    newLevel: number;
+    levelChange: number;
     message: string;
   };
 }
 
 // 問題生成のリクエスト
 export interface GenerateQuestionRequest {
-  category_id?: number;
-  skill_id?: number;
+  categoryId?: number;
+  skillId?: number;
 }
