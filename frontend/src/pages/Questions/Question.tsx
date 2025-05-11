@@ -216,6 +216,15 @@ export const Question = () => {
             ))}
           </div>
           
+          {/* フィードバックメッセージ表示エリア */}
+          {feedback && isMultipleChoiceQuestion(question) && (
+            <div className={`mt-4 p-4 rounded-md ${
+              feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
+            }`}>
+              <p className="font-bold">{feedback.message}</p>
+            </div>
+          )}
+          
           {/* 解説表示エリア */}
           {showExplanation && isMultipleChoiceQuestion(question) && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">

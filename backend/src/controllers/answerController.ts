@@ -22,11 +22,11 @@ const answerController = {
           createApiResponse(false, '認証が必要です')
         );
       }
-
-      const { questionId, answerIndex, timeTaken } = req.body;
+      // フロントエンドとの整合性のため両方のパラメータ名をサポート
+      const { questionId, selectedOptionIndex , timeTaken } = req.body;
       
       // 基本的なバリデーション
-      if (questionId === undefined || answerIndex === undefined) {
+      if (questionId === undefined || selectedOptionIndex === undefined) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           createApiResponse(false, '問題IDと選択肢のインデックスは必須です')
         );
@@ -37,7 +37,7 @@ const answerController = {
       const result = await answerService.recordMultipleChoiceAnswer(
         questionId,
         userId,
-        answerIndex,
+        selectedOptionIndex,
         timeTaken || 0
       );
       
