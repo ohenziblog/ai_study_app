@@ -5,6 +5,10 @@ const config = require('../../config/env');
 // CommonJSスタイルでエクスポートされたloggerを正しく読み込む
 const logger = require('../../utils/logger').default;
 
+// モジュールレベルの定数として設定値を保存
+const DEEPSEEK_API_KEY = config.DEEPSEEK_API_KEY;
+const DEEPSEEK_API_ENDPOINT = config.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+
 /**
  * キャッシュマップの管理とキャッシュ処理を行うユーティリティ関数
  * @param cacheName グローバルに保存するキャッシュの名前
@@ -63,12 +67,12 @@ const deepseekService = {
   ) => {
     try {
       // AIがアクセス可能なAPIエンドポイントがない場合は開発用生成ロジックを使用
-      if (!config.DEEPSEEK_API_KEY) {
+      if (!DEEPSEEK_API_KEY) {
         return deepseekService.mockGenerateQuestion(category, skill, targetDifficulty);
       }
 
       // DeepSeek APIエンドポイント（適切なエンドポイントに変更してください）
-      const apiEndpoint = config.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+      const apiEndpoint = DEEPSEEK_API_ENDPOINT;
       
       // 類似問題を避けるためのコンテキストを構築
       const avoidanceContext = deepseekService.buildAvoidanceContext(
@@ -124,7 +128,7 @@ ${avoidanceContext}
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.DEEPSEEK_API_KEY}`
+            'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
           }
         }
       );
@@ -222,11 +226,11 @@ ${avoidanceContext}
         1000,
         async () => {
           // AIがアクセス可能なAPIエンドポイントがない場合は簡易要約を返す
-          if (!config.DEEPSEEK_API_KEY) {
+          if (!DEEPSEEK_API_KEY) {
             return deepseekService.createSimpleSummary(questionText);
           }
 
-          const apiEndpoint = config.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+          const apiEndpoint = DEEPSEEK_API_ENDPOINT;
           
           const prompt = `
 以下の問題文と選択肢を30文字以内で要約してください。主要なトピックと問われている内容を簡潔に表現してください。
@@ -254,7 +258,7 @@ ${options.join('\n')}
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.DEEPSEEK_API_KEY}`
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
               }
             }
           );
@@ -296,11 +300,11 @@ ${options.join('\n')}
         1000,
         async () => {
           // AIがアクセス可能なAPIエンドポイントがない場合は簡易要約を返す
-          if (!config.DEEPSEEK_API_KEY) {
+          if (!DEEPSEEK_API_KEY) {
             return deepseekService.createSimpleAbstractHash(questionText);
           }
 
-          const apiEndpoint = config.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1/chat/completions';
+          const apiEndpoint = DEEPSEEK_API_ENDPOINT;
           
           const prompt = `
 以下の問題から主要なコンセプトとキーワードを3〜5個抽出し、カンマ区切りで出力してください。これらのキーワードは問題の本質を表し、類似問題を特定するために使用されます。
@@ -332,7 +336,7 @@ ${options.join('\n')}
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.DEEPSEEK_API_KEY}`
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
               }
             }
           );
