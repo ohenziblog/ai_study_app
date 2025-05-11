@@ -409,54 +409,75 @@ ${options.join('\n')}
    * @returns 生成された問題
    */
   mockGenerateQuestion: (category: any, skill: any, targetDifficulty: number) => {
-    // カテゴリとスキルに基づいたテンプレート問題のセット
+    // カテゴリとスキルのID情報を確認
+    const categoryId = category.categoryId || '不明';
+    const skillId = skill.skillId || '不明';
+    
+    // ランダムな正解選択肢インデックス (0-3)
+    const randomCorrectIndex = Math.floor(Math.random() * 4);
+    
+    // 選択肢のラベル
+    const optionLabels = ['A', 'B', 'C', 'D'];
+    const correctLetter = optionLabels[randomCorrectIndex];
+    
+    // 多様なテンプレート問題（問題文に正解を含める）
     const questionTemplates = [
       {
-        question: `${category.categoryName}の分野において、${skill.skillName}の主要な特徴は次のうちどれですか？`,
+        question: `【開発用モック】【正解:${correctLetter}】【カテゴリID:${categoryId}, スキルID:${skillId}】${category.categoryName}における${skill.skillName}の主要な特徴を選択してください。`,
         options: [
-          `理論的枠組みの一貫性`,
-          `実践的応用の幅広さ`,
-          `歴史的発展の特異性`,
-          `概念の抽象度の高さ`
+          `A: 理論的枠組みの一貫性と論理的構造`,
+          `B: 実践的応用の幅広さと具体的な実装手法`,
+          `C: 歴史的発展の特異性と技術的な変遷過程`,
+          `D: 概念の抽象度の高さと体系的な分類方法`
         ],
-        correctAnswerIndex: 1,
-        explanation: `${skill.skillName}は、その理論的基盤よりも実践的な応用範囲の広さが特徴的です。様々な実務的な状況で活用されることで、その有用性が証明されています。`
+        explanation: `この問題は開発テスト用です。正解選択肢は「${correctLetter}」（インデックス:${randomCorrectIndex}）と明記されています。カテゴリ:${category.categoryName}(ID:${categoryId})、スキル:${skill.skillName}(ID:${skillId})、難易度:${targetDifficulty}/5`
       },
       {
-        question: `${skill.skillName}を理解する上で最も重要な概念は何ですか？`,
+        question: `【デバッグ用】【正解は${correctLetter}】【カテゴリID:${categoryId}, スキルID:${skillId}】${skill.skillName}を理解する上で最も重要な概念を選んでください。`,
         options: [
-          `構造的一貫性`,
-          `機能的多様性`,
-          `対象領域の特定性`,
-          `適用範囲の柔軟性`
+          `A: 構造的一貫性 - 内部要素間の論理的関連性`,
+          `B: 機能的多様性 - 異なる状況での適応能力`,
+          `C: 対象領域の特定性 - 応用範囲の明確な境界`,
+          `D: 実装の柔軟性 - 様々な環境への適応性`
         ],
-        correctAnswerIndex: 3,
-        explanation: `${skill.skillName}の最も重要な側面は、様々な状況に柔軟に適用できる点です。この適用範囲の柔軟性によって、異なる問題設定においても効果的に活用できます。`
+        explanation: `開発テスト用問題。問題文に記載のとおり正解は「${correctLetter}」です。この問題はカテゴリ「${category.categoryName}」(ID:${categoryId})のスキル「${skill.skillName}」(ID:${skillId})に関するテスト問題です。難易度:${targetDifficulty}/5`
       },
       {
-        question: `${category.categoryName}における${skill.skillName}の応用で、最も効果的なアプローチは次のうちどれですか？`,
+        question: `【開発テスト】【${correctLetter}が正解】【カテゴリ:${category.categoryName}(ID:${categoryId}), スキル:${skill.skillName}(ID:${skillId})】開発効率を向上させるアプローチはどれですか？`,
         options: [
-          `段階的な適用と検証`,
-          `包括的な理論分析`,
-          `反復的な試行錯誤`,
-          `統合的なシステム設計`
+          `A: 段階的な適用と継続的な検証プロセス`,
+          `B: 包括的な理論分析と詳細な計画立案`,
+          `C: 反復的な試行錯誤と迅速なフィードバック`,
+          `D: 統合的なシステム設計と全体最適化`
         ],
-        correctAnswerIndex: 0,
-        explanation: `${skill.skillName}を${category.categoryName}に応用する際は、段階的なアプローチが最も効果的です。各段階での適用結果を検証しながら進めることで、最適な結果を得ることができます。`
+        explanation: `この問題は開発テスト用モックです。問題文に明記されているとおり「${correctLetter}」が正解です。選択肢インデックス:${randomCorrectIndex}、難易度:${targetDifficulty}/5`
+      },
+      {
+        question: `【モックデータ】【正答:${correctLetter}(${randomCorrectIndex})】【カテゴリID:${categoryId}「${category.categoryName}」、スキルID:${skillId}「${skill.skillName}」】次の選択肢から「${correctLetter}」を選んでください。`,
+        options: [
+          `A: プロジェクト初期段階での適用（これが正解なら「A」を選択）`,
+          `B: 既存システムの最適化（これが正解なら「B」を選択）`,
+          `C: チーム開発における標準化（これが正解なら「C」を選択）`,
+          `D: システム全体のアーキテクチャ（これが正解なら「D」を選択）`
+        ],
+        explanation: `開発用モックデータです。正解は問題文と選択肢に記載のとおり「${correctLetter}」（インデックス:${randomCorrectIndex}）です。カテゴリID:${categoryId}、スキルID:${skillId}、難易度:${targetDifficulty}/5`
       }
     ];
     
     // ランダムにテンプレートを選択
-    const template = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
+    const templateIndex = Math.floor(Math.random() * questionTemplates.length);
+    const template = questionTemplates[templateIndex];
     
-    // 難易度に基づいてテンプレートを調整
+    // 選択されたテンプレートに対して、ランダムな正解インデックスを設定
     let adjustedTemplate = { ...template };
+    
+    // 難易度に基づいて問題文を調整（難易度情報も問題文に含める）
     if (targetDifficulty > 3) {
-      // 難しい問題にするための調整
-      adjustedTemplate.question = `${category.categoryName}の高度な視点から見た場合、${skill.skillName}における最も本質的な要素は次のうちどれですか？`;
+      // 難しい問題にするための調整（詳細な文脈を追加）
+      adjustedTemplate.question = `【高難度:${targetDifficulty}/5】【正解:${correctLetter}】【カテゴリID:${categoryId}, スキルID:${skillId}】${category.categoryName}の高度な実践における${skill.skillName}の要素として、選択肢「${correctLetter}」を選んでください。`;
     } else if (targetDifficulty < 2) {
-      // 簡単な問題にするための調整
-      adjustedTemplate.question = `${category.categoryName}の基本として、${skill.skillName}の主な目的は次のうちどれですか？`;
+      // 簡単な問題にするための調整（シンプルな言い回しに）
+      adjustedTemplate.question = `【初級:${targetDifficulty}/5】【正解:${correctLetter}】【カテゴリID:${categoryId}, スキルID:${skillId}】${category.categoryName}における${skill.skillName}について、選択肢「${correctLetter}」を選んでください。`;
     }
     
     // ハッシュを生成
@@ -468,7 +489,7 @@ ${options.join('\n')}
       hash,
       question: adjustedTemplate.question,
       options: adjustedTemplate.options,
-      correctAnswerIndex: adjustedTemplate.correctAnswerIndex,
+      correctAnswerIndex: randomCorrectIndex, // ランダムな正解インデックスを使用
       explanation: adjustedTemplate.explanation,
       difficulty: targetDifficulty
     };
