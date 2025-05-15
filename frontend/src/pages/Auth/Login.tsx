@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
+import { useEffect } from 'react';
+import logger from '../../utils/logger';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,20 +14,27 @@ export const Login = () => {
   const navigate = useNavigate();
 
   // 既にログインしている場合はダッシュボードへリダイレクト
-  if (isAuthenticated) {
-    navigate('/dashboard', { replace: true });
-    return null;
+  useEffect(() => {
+    if (isAuthenticated) {
+      logger.debug('既にログイン済み - ダッシュボードへリダイレクト');
+      navigate('/dashboard', { replace: true });
+    }
   }
+  , [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    logger.debug(`ログイン試行: ${email}`);
     
     try {
       await login({ email, password });
+      logger.info(`ログイン成功: ${email}`);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。');
+      const errorMessage = err.message || 'ログインに失敗しました。メールアドレスとパスワードを確認してください。';
+      logger.error(`ログイン失敗: ${errorMessage}`, { notify: false });
+      setError(errorMessage);
     }
   };
 

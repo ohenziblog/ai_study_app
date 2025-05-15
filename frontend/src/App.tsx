@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Layout } from './components/layout/Layout';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import logger from './utils/logger';
 
 // ページコンポーネント
 import { Login } from './pages/Auth/Login';
@@ -19,17 +20,21 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
+    logger.debug('認証状態確認中...');
     return <div className="flex justify-center items-center h-screen">読込中...</div>;
   }
   
   if (!isAuthenticated) {
+    logger.debug('未認証ユーザーによる保護ページへのアクセス - ログインページへリダイレクト');
     return <Navigate to="/login" replace />;
   }
   
+  logger.debug('認証済みユーザー - 保護ページへのアクセスを許可');
   return children;
 };
 
 function App() {
+  logger.info('アプリケーション初期化');
   return (
     <Router>
       <AuthProvider>

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
+import logger from '../../utils/logger';
 
 export const Register = () => {
   const [username, setUsername] = useState('');
@@ -14,31 +15,42 @@ export const Register = () => {
   const navigate = useNavigate();
 
   // 既にログインしている場合はダッシュボードへリダイレクト
-  if (isAuthenticated) {
-    navigate('/dashboard', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      logger.debug('既にログイン済み - ダッシュボードへリダイレクト');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
+    logger.debug(`ユーザー登録試行: ${email}`);
+    
     // 基本的なバリデーション
     if (password.length < 8) {
-      setError('パスワードは8文字以上で入力してください');
+      const errorMessage = 'パスワードは8文字以上で入力してください';
+      logger.warn(`登録バリデーションエラー: ${errorMessage}`);
+      setError(errorMessage);
       return;
     }
     
     if (password !== confirmPassword) {
-      setError('パスワードと確認用パスワードが一致しません');
+      const errorMessage = 'パスワードと確認用パスワードが一致しません';
+      logger.warn(`登録バリデーションエラー: ${errorMessage}`);
+      setError(errorMessage);
       return;
     }
     
     try {
       await register({ username, email, password });
+      logger.info(`ユーザー登録成功: ${email}`);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || '登録に失敗しました。入力内容を確認してください。');
+      const errorMessage = err.message || '登録に失敗しました。入力内容を確認してください。';
+      logger.error(`ユーザー登録失敗: ${errorMessage}`, { notify: false });
+      setError(errorMessage);
     }
   };
 
