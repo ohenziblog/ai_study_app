@@ -1,6 +1,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { categoryApi } from '../api/categories';
 import type { Category, ApiResponse } from '../types/api';
+import logger from '../utils/logger';
 
 /**
  * すべての教科（カテゴリー）を取得するカスタムフック
@@ -14,7 +15,17 @@ import type { Category, ApiResponse } from '../types/api';
 export const useCategories = (): UseQueryResult<Category[], Error> => {
   return useQuery<Category[], Error>({
     queryKey: ['categories'],
-    queryFn: () => categoryApi.getAllCategories(),
+    queryFn: async () => {
+      try {
+        logger.debug('カテゴリー一覧を取得中...');
+        const categories = await categoryApi.getAllCategories();
+        logger.debug(`${categories.length}件のカテゴリーを取得しました`);
+        return categories;
+      } catch (error) {
+        logger.error('カテゴリー一覧の取得に失敗しました', error);
+        throw error;
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5分間キャッシュを利用
     retry: 2, // エラー時に2回まで再試行
   });
@@ -38,7 +49,22 @@ export const useCategoryWithSkills = (categoryId: number | undefined): UseQueryR
 }, Error> => {
   return useQuery({
     queryKey: ['category', categoryId, 'skills'],
-    queryFn: () => categoryId ? categoryApi.getCategorySkills(categoryId) : Promise.reject('カテゴリーIDが指定されていません'),
+    queryFn: async () => {
+      if (!categoryId) {
+        logger.error('カテゴリーIDが指定されていません');
+        return Promise.reject('カテゴリーIDが指定されていません');
+      }
+      
+      try {
+        logger.debug(`カテゴリーID: ${categoryId} のスキル情報を取得中...`);
+        const result = await categoryApi.getCategorySkills(categoryId);
+        logger.debug(`カテゴリー「${result.category.name}」のスキル ${result.skills.length}件を取得しました`);
+        return result;
+      } catch (error) {
+        logger.error(`カテゴリーID: ${categoryId} のスキル情報取得に失敗しました`, error);
+        throw error;
+      }
+    },
     enabled: !!categoryId, // categoryIdが存在する場合のみクエリを実行
     staleTime: 5 * 60 * 1000, // 5分間キャッシュを利用
     retry: 1, // エラー時に1回だけ再試行
