@@ -7,6 +7,7 @@ import {
   isMultipleChoiceQuestion
 } from '../../hooks/useQuestions';
 import { Button } from '../../components/common/Button';
+import logger from '../../utils/logger';
 
 export const Question = () => {
   const [searchParams] = useSearchParams();
@@ -34,6 +35,8 @@ export const Question = () => {
       setShowExplanation(false);
       setFeedback(null);
       
+      logger.debug(`問題表示 - ID: ${question.questionId}, タイプ: ${isMultipleChoiceQuestion(question) ? '選択式' : '記述式'}`);
+      
       // テキストエリアにフォーカス（自由回答形式の場合）
       if (!isMultipleChoiceQuestion(question) && answerTextareaRef.current) {
         answerTextareaRef.current.focus();
@@ -43,11 +46,11 @@ export const Question = () => {
 
   // 自由回答形式での回答提出
   const handleSubmitFreeForm = async (e: React.FormEvent) => {
-
-   e.preventDefault();
+    e.preventDefault();
     if (!question || isSubmitting || !answer.trim()) return;
     
     const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 秒単位
+    logger.debug(`記述式回答提出 - 問題ID: ${question.questionId}, 解答時間: ${timeTaken}秒`);
     
     setIsSubmitting(true);
     setFeedback(null);
@@ -63,9 +66,13 @@ export const Question = () => {
         isCorrect,
         timeTaken,
       });
-     setFeedback({
-        type: result.question.isCorrect ? 'success' : 'error',
-        message: result.question.isCorrect 
+      
+      const resultCorrect = result.question.isCorrect;
+      logger.info(`回答結果 - 問題ID: ${question.questionId}, 結果: ${resultCorrect ? '正解' : '不正解'}`);
+      
+      setFeedback({
+        type: resultCorrect ? 'success' : 'error',
+        message: resultCorrect 
           ? '正解です！次の問題に進みましょう。' 
           : '不正解です。次の問題で頑張りましょう。'
       });
@@ -77,9 +84,12 @@ export const Question = () => {
         refetch();
       }, 3000);
     } catch (err: any) {
+      const errorMessage = err.message || '回答の送信中にエラーが発生しました。';
+      logger.error(`回答送信エラー: ${errorMessage}`, { notify: false });
+      
       setFeedback({
         type: 'error',
-        message: err.message || '回答の送信中にエラーが発生しました。'
+        message: errorMessage
       });
     } finally {
       setIsSubmitting(false);
@@ -94,6 +104,7 @@ export const Question = () => {
     setIsSubmitting(true);
     
     const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 秒単位
+    logger.debug(`選択肢回答 - 問題ID: ${question?.questionId}, 選択肢: ${optionIndex}, 解答時間: ${timeTaken}秒`);
     
     try {
       if (isMultipleChoiceQuestion(question)) {
@@ -104,6 +115,7 @@ export const Question = () => {
         });
         
         const isCorrect = result.question.isCorrect;
+        logger.info(`選択肢回答結果 - 問題ID: ${question.questionId}, 結果: ${isCorrect ? '正解' : '不正解'}`);
         
         setFeedback({
           type: isCorrect ? 'success' : 'error',
@@ -116,9 +128,12 @@ export const Question = () => {
         setShowExplanation(true);
       }
     } catch (err: any) {
+      const errorMessage = err.message || '回答の送信中にエラーが発生しました。';
+      logger.error(`選択肢回答送信エラー: ${errorMessage}`, { notify: false });
+      
       setFeedback({
         type: 'error',
-        message: err.message || '回答の送信中にエラーが発生しました。'
+        message: errorMessage
       });
     } finally {
       setIsSubmitting(false);
@@ -127,6 +142,7 @@ export const Question = () => {
 
   // 次の問題に進む
   const handleNextQuestion = () => {
+    logger.debug('次の問題に進む');
     setAnswer('');
     setSelectedOption(null);
     setFeedback(null);
@@ -135,6 +151,7 @@ export const Question = () => {
   };
 
   if (isLoading) {
+    logger.debug('問題読み込み中...');
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
@@ -143,9 +160,12 @@ export const Question = () => {
   }
 
   if (error || !question) {
+    const errorMessage = error?.message || '問題が見つかりません';
+    logger.error(`問題取得エラー: ${errorMessage}`, { notify: false });
+    
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-        <p>問題の取得に失敗しました: {error?.message || '問題が見つかりません'}</p>
+        <p>問題の取得に失敗しました: {errorMessage}</p>
         <div className="mt-4">
           <Link to="/subjects" className="text-primary hover:underline">
             ← 教科一覧に戻る
