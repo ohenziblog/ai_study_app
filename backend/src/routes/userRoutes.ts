@@ -19,6 +19,13 @@ router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
 
 /**
+ * @route GET /users/skill-levels
+ * @desc ユーザーのスキルレベルを取得
+ * @param {string} userId - クエリパラメータでユーザーのIDを指定
+ */
+router.get('/skill-levels', userController.getUserSkillLevels);
+
+/**
  * @route POST /users
  * @desc 新しいユーザーを作成
  */

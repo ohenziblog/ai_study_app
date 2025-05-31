@@ -79,6 +79,38 @@ const userService = {
   },
 
   /**
+   * 指定されたユーザーのスキルレベルを取得
+   */
+  getUserSkillLevels: async (userId: number): Promise<any[]> => {
+    try {
+      // TODO: UserSkillLevelエンティティとの関連を実装
+      // 現在は仮のデータを返す
+      logger.info(`ユーザーID: ${userId} のスキルレベルを取得中...`);
+      
+      // 仮のスキルレベルデータ
+      const mockSkillLevels = [
+        {
+          skillId: 1,
+          skillName: 'JavaScript',
+          level: 3,
+          experience: 150
+        },
+        {
+          skillId: 2,
+          skillName: 'TypeScript',
+          level: 2,
+          experience: 80
+        }
+      ];
+      
+      return mockSkillLevels;
+    } catch (error) {
+      logger.error(`ユーザーID: ${userId} のスキルレベル取得中にエラーが発生しました: ${error}`);
+      throw error;
+    }
+  },
+
+  /**
    * 指定されたIDのユーザーを削除
    */
   delete: async (id: number): Promise<boolean> => {

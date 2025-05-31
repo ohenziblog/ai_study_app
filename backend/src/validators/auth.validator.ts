@@ -17,27 +17,27 @@ export const validateRegisterRequest = (data: Partial<RegisterDTO>): ValidationR
   const errors: string[] = [];
   
   // 必須項目チェック
-  const usernameError = requiredValidator(data.username || '', 'ユーザー名');
-  const emailError = requiredValidator(data.email || '', 'メールアドレス');
-  const passwordError = requiredValidator(data.password || '', 'パスワード');
+  const usernameValidation = requiredValidator(data.username || '', 'ユーザー名');
+  const emailValidation = requiredValidator(data.email || '', 'メールアドレス');
+  const passwordValidation = requiredValidator(data.password || '', 'パスワード');
   
-  if (usernameError) errors.push(usernameError);
-  if (emailError) errors.push(emailError);
-  if (passwordError) errors.push(passwordError);
+  if (!usernameValidation.isValid) errors.push(...usernameValidation.errors);
+  if (!emailValidation.isValid) errors.push(...emailValidation.errors);
+  if (!passwordValidation.isValid) errors.push(...passwordValidation.errors);
   
   // 形式チェック
-  if (data.email && !emailError) {
-    const emailFormatError = emailValidator(data.email);
-    if (emailFormatError) errors.push(emailFormatError);
+  if (data.email && emailValidation.isValid) {
+    const emailFormatValidation = emailValidator(data.email);
+    if (!emailFormatValidation.isValid) errors.push(...emailFormatValidation.errors);
   }
   
   // パスワード長チェック
-  if (data.password && !passwordError) {
-    const passwordLengthError = minLengthValidator(data.password, 8, 'パスワード');
-    if (passwordLengthError) errors.push(passwordLengthError);
+  if (data.password && passwordValidation.isValid) {
+    const passwordLengthValidation = minLengthValidator(data.password, 8, 'パスワード');
+    if (!passwordLengthValidation.isValid) errors.push(...passwordLengthValidation.errors);
   }
   
-  return createValidationResult(errors);
+  return createValidationResult(errors.length === 0, errors);
 };
 
 /**
@@ -48,11 +48,11 @@ export const validateLoginRequest = (data: Partial<LoginRequestDTO>): Validation
   const errors: string[] = [];
   
   // 必須項目チェック
-  const emailError = requiredValidator(data.email || '', 'メールアドレス');
-  const passwordError = requiredValidator(data.password || '', 'パスワード');
+  const emailValidation = requiredValidator(data.email || '', 'メールアドレス');
+  const passwordValidation = requiredValidator(data.password || '', 'パスワード');
   
-  if (emailError) errors.push(emailError);
-  if (passwordError) errors.push(passwordError);
+  if (!emailValidation.isValid) errors.push(...emailValidation.errors);
+  if (!passwordValidation.isValid) errors.push(...passwordValidation.errors);
   
-  return createValidationResult(errors);
+  return createValidationResult(errors.length === 0, errors);
 };

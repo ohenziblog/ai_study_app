@@ -1,16 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { questionApi } from '../api/questions';
 import type { 
-  Question, 
-  MultipleChoiceQuestion, 
+  QuestionWithChoices,
   AnswerRequest, 
-  MultipleChoiceAnswerRequest 
-} from '../types/api';
+  MultipleChoiceAnswerRequest
+} from '@ai-study-app/shared-types';
 import logger from '../utils/logger';
 
 // 問題を取得するためのフック
 export const useQuestion = (categoryId?: number, skillId?: number) => {
-  return useQuery<Question | MultipleChoiceQuestion, Error>({
+  return useQuery<QuestionWithChoices, Error>({
     queryKey: ['question', { categoryId, skillId }],
     queryFn: async () => {
       logger.debug(`問題取得中 - カテゴリID: ${categoryId || '未指定'}, スキルID: ${skillId || '未指定'}`);
@@ -24,7 +23,7 @@ export const useQuestion = (categoryId?: number, skillId?: number) => {
       }
     },
     staleTime: 0, // 常に新しい問題を取得
-    cacheTime: 0, // キャッシュしない
+    gcTime: 0, // キャッシュしない
     retry: false,
   });
 };
@@ -57,7 +56,7 @@ export const useSubmitAnswer = () => {
       logger.debug(`回答送信中 - 問題ID: ${data.questionId}`);
       try {
         const result = await questionApi.submitAnswer(data);
-        logger.info(`回答送信成功 - 結果: ${result.isCorrect ? '正解' : '不正解'}`);
+        logger.info(`回答送信成功 - 結果: ${result.question.isCorrect ? '正解' : '不正解'}`);
         return result;
       } catch (error) {
         logger.error('回答送信中にエラーが発生しました', { notify: false });
@@ -78,7 +77,7 @@ export const useSubmitMultipleChoiceAnswer = () => {
   
   return useMutation({
     mutationFn: async (data: MultipleChoiceAnswerRequest) => {
-      logger.debug(`選択肢回答送信中 - 問題ID: ${data.questionId}, 選択肢: ${data.choiceIndex}`);
+      logger.debug(`選択肢回答送信中 - 問題ID: ${data.questionId}, 選択肢: ${data.selectedOptionIndex}`);
       try {
         const result = await questionApi.submitMultipleChoiceAnswer(data);
         logger.info(`選択肢回答送信成功 - 結果: ${result.isCorrect ? '正解' : '不正解'}`);
@@ -98,7 +97,7 @@ export const useSubmitMultipleChoiceAnswer = () => {
 
 // 4択問題かどうかを判定するユーティリティ関数
 export const isMultipleChoiceQuestion = (
-  question: Question | MultipleChoiceQuestion
-): question is MultipleChoiceQuestion => {
-  return 'options' in question && Array.isArray((question as MultipleChoiceQuestion).options);
+  question: QuestionWithChoices
+): boolean => {
+  return question.options && Array.isArray(question.options) && question.options.length > 0;
 };

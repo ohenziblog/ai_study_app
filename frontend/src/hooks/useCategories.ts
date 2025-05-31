@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { categoryApi } from '../api/categories';
-import type { Category, ApiResponse } from '../types/api';
+import type { Category } from '../types/api';
 import logger from '../utils/logger';
 
 /**
@@ -22,7 +22,7 @@ export const useCategories = (): UseQueryResult<Category[], Error> => {
         logger.debug(`${categories.length}件のカテゴリーを取得しました`);
         return categories;
       } catch (error) {
-        logger.error('カテゴリー一覧の取得に失敗しました', error);
+        logger.error(`カテゴリー一覧の取得に失敗しました: ${error instanceof Error ? error.message : String(error)}`, { notify: false });
         throw error;
       }
     },
@@ -61,8 +61,7 @@ export const useCategoryWithSkills = (categoryId: number | undefined): UseQueryR
         logger.debug(`カテゴリー「${result.category.name}」のスキル ${result.skills.length}件を取得しました`);
         return result;
       } catch (error) {
-        logger.error(`カテゴリーID: ${categoryId} のスキル情報取得に失敗しました`, error);
-        throw error;
+        logger.error(`カテゴリーID: ${categoryId} のスキル情報取得に失敗しました: ${error instanceof Error ? error.message : String(error)}`, { notify: false });
       }
     },
     enabled: !!categoryId, // categoryIdが存在する場合のみクエリを実行

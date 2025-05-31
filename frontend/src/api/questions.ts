@@ -1,13 +1,12 @@
 import apiClient from './axios';
 import type { 
-  Question, 
-  MultipleChoiceQuestion,
   AnswerRequest, 
   AnswerResponse, 
   MultipleChoiceAnswerRequest,
   MultipleChoiceAnswerResponse,
-  ApiResponse 
-} from '../types/api';
+  ApiResponse,
+  QuestionWithChoices 
+} from '@ai-study-app/shared-types';
 import logger from '../utils/logger';
 
 /**
@@ -17,7 +16,7 @@ export const questionApi = {
   /**
    * 新しい問題を取得する
    */
-  getQuestion: async (categoryId?: number, skillId?: number): Promise<Question | MultipleChoiceQuestion> => {
+  getQuestion: async (categoryId?: number, skillId?: number): Promise<QuestionWithChoices> => {
     let url = '/questions';
     const params: Record<string, string> = {};
     
@@ -25,7 +24,7 @@ export const questionApi = {
     if (skillId) params.skillId = skillId.toString();
     
     logger.debug(`問題取得リクエスト - カテゴリID: ${categoryId || '未指定'}, スキルID: ${skillId || '未指定'}`);
-    const response = await apiClient.get<ApiResponse<Question | MultipleChoiceQuestion>>(url, { params });
+    const response = await apiClient.get<ApiResponse<QuestionWithChoices>>(url, { params });
     
     if (response.data.success && response.data.data) {
       logger.info('問題取得成功');
@@ -45,7 +44,7 @@ export const questionApi = {
     const response = await apiClient.post<ApiResponse<AnswerResponse>>('/answers', data);
     
     if (response.data.success && response.data.data) {
-      const isCorrect = response.data.data.isCorrect;
+      const isCorrect = response.data.data.question.isCorrect;
       logger.info(`回答送信成功 - 結果: ${isCorrect ? '正解' : '不正解'}`);
       return response.data.data;
     }
@@ -59,14 +58,14 @@ export const questionApi = {
    * 選択肢付き問題への回答を送信する
    */
   submitMultipleChoiceAnswer: async (data: MultipleChoiceAnswerRequest): Promise<MultipleChoiceAnswerResponse> => {
-    logger.debug(`選択肢回答送信 - 問題ID: ${data.questionId}, 選択肢: ${data.choiceIndex}`);
+    logger.debug(`選択肢回答送信 - 問題ID: ${data.questionId}, 選択肢: ${data.selectedOptionIndex}`);
     const response = await apiClient.post<ApiResponse<MultipleChoiceAnswerResponse>>(
       '/answers/multiple-choice', 
       data
     );
     
     if (response.data.success && response.data.data) {
-      const isCorrect = response.data.data.isCorrect;
+      const isCorrect = response.data.data.question.isCorrect;
       logger.info(`選択肢回答送信成功 - 結果: ${isCorrect ? '正解' : '不正解'}`);
       return response.data.data;
     }

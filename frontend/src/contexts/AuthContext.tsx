@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(response.user);
       logger.info(`ログイン成功: ${response.user.username}`);
     } catch (error) {
-      logger.error('ログイン失敗', error);
+      logger.error(`ログイン失敗: ${error instanceof Error ? error.message : String(error)}`, { notify: true });
       throw error; // エラーを上位コンポーネントに伝播
     } finally {
       setIsLoading(false);
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(response.user);
       logger.info(`新規ユーザー登録成功: ${response.user.username}`);
     } catch (error) {
-      logger.error('ユーザー登録失敗', error);
+      logger.error(`ユーザー登録失敗: ${error instanceof Error ? error.message : String(error)}`, { notify: true });
       throw error; // エラーを上位コンポーネントに伝播
     } finally {
       setIsLoading(false);

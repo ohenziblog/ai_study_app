@@ -57,6 +57,37 @@ const userController = {
     }
   },
 
+  getUserSkillLevels: async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      
+      if (!userId) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          createApiResponse(false, 'ユーザーIDが必要です')
+        );
+      }
+
+      const id = parseInt(userId);
+      if (isNaN(id)) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          createApiResponse(false, '無効なユーザーIDです')
+        );
+      }
+
+      // ユーザーのスキルレベルを取得（サービス実装待ち）
+      const skillLevels = await userService.getUserSkillLevels(id);
+      
+      return res.status(HTTP_STATUS.OK).json(
+        createApiResponse(true, 'ユーザーのスキルレベルを取得しました', skillLevels)
+      );
+    } catch (error) {
+      logger.error(`ユーザースキルレベル取得中にエラーが発生しました: ${error}`);
+      return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
+        createApiResponse(false, 'サーバーエラーが発生しました')
+      );
+    }
+  },
+
   /**
    * 新しいユーザーを作成
    */

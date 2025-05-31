@@ -31,7 +31,7 @@ export const categoryApi = {
     const response = await apiClient.get<ApiResponse<Category>>(`/categories/${id}`);
     
     if (response.data.success && response.data.data) {
-      logger.info(`カテゴリー取得成功 - ID: ${id}, 名前: ${response.data.data.categoryName}`);
+      logger.info(`カテゴリー取得成功 - ID: ${id}, 名前: ${response.data.data.name}`);
       return response.data.data;
     }
     
@@ -48,7 +48,7 @@ export const categoryApi = {
     const response = await apiClient.get<ApiResponse<{ category: Category; skills: Skill[] }>>(`/categories/${id}/skills`);
     
     if (response.data.success && response.data.data) {
-      logger.info(`カテゴリースキル一覧取得成功 - カテゴリー: ${response.data.data.category.categoryName}, スキル数: ${response.data.data.skills.length}`);
+      logger.info(`カテゴリースキル一覧取得成功 - カテゴリー: ${response.data.data.category.name}, スキル数: ${response.data.data.skills.length}`);
       return response.data.data;
     }
     

@@ -35,7 +35,7 @@ export const Question = () => {
       setShowExplanation(false);
       setFeedback(null);
       
-      logger.debug(`問題表示 - ID: ${question.questionId}, タイプ: ${isMultipleChoiceQuestion(question) ? '選択式' : '記述式'}`);
+      logger.debug(`問題表示 - ID: ${question.id}, タイプ: ${isMultipleChoiceQuestion(question) ? '選択式' : '記述式'}`);
       
       // テキストエリアにフォーカス（自由回答形式の場合）
       if (!isMultipleChoiceQuestion(question) && answerTextareaRef.current) {
@@ -50,7 +50,7 @@ export const Question = () => {
     if (!question || isSubmitting || !answer.trim()) return;
     
     const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 秒単位
-    logger.debug(`記述式回答提出 - 問題ID: ${question.questionId}, 解答時間: ${timeTaken}秒`);
+    logger.debug(`記述式回答提出 - 問題ID: ${question.id}, 解答時間: ${timeTaken}秒`);
     
     setIsSubmitting(true);
     setFeedback(null);
@@ -61,14 +61,14 @@ export const Question = () => {
       const isCorrect = true; // 仮の値
       
       const result = await submitAnswerMutation.mutateAsync({
-        questionId: question.questionId,
+        questionId: question.id,
         answerText: answer,
         isCorrect,
         timeTaken,
       });
       
       const resultCorrect = result.question.isCorrect;
-      logger.info(`回答結果 - 問題ID: ${question.questionId}, 結果: ${resultCorrect ? '正解' : '不正解'}`);
+      logger.info(`回答結果 - 問題ID: ${question.id}, 結果: ${resultCorrect ? '正解' : '不正解'}`);
       
       setFeedback({
         type: resultCorrect ? 'success' : 'error',
@@ -85,7 +85,7 @@ export const Question = () => {
       }, 3000);
     } catch (err: any) {
       const errorMessage = err.message || '回答の送信中にエラーが発生しました。';
-      logger.error(`回答送信エラー: ${errorMessage}`, { notify: false });
+      logger.error(`回答送信エラー: ${error instanceof Error ? error.message : String(error)}`, { notify: false });
       
       setFeedback({
         type: 'error',
@@ -104,18 +104,18 @@ export const Question = () => {
     setIsSubmitting(true);
     
     const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 秒単位
-    logger.debug(`選択肢回答 - 問題ID: ${question?.questionId}, 選択肢: ${optionIndex}, 解答時間: ${timeTaken}秒`);
+    logger.debug(`選択肢回答 - 問題ID: ${question?.id}, 選択肢: ${optionIndex}, 解答時間: ${timeTaken}秒`);
     
     try {
-      if (isMultipleChoiceQuestion(question)) {
+      if (question && isMultipleChoiceQuestion(question)) {
         const result = await submitMultipleChoiceMutation.mutateAsync({
-          questionId: question.questionId,
+          questionId: question.id,
           selectedOptionIndex: optionIndex,
           timeTaken,
         });
         
         const isCorrect = result.question.isCorrect;
-        logger.info(`選択肢回答結果 - 問題ID: ${question.questionId}, 結果: ${isCorrect ? '正解' : '不正解'}`);
+        logger.info(`選択肢回答結果 - 問題ID: ${question.id}, 結果: ${isCorrect ? '正解' : '不正解'}`);
         
         setFeedback({
           type: isCorrect ? 'success' : 'error',
@@ -129,7 +129,7 @@ export const Question = () => {
       }
     } catch (err: any) {
       const errorMessage = err.message || '回答の送信中にエラーが発生しました。';
-      logger.error(`選択肢回答送信エラー: ${errorMessage}`, { notify: false });
+      logger.error(`選択肢回答送信エラー: ${error instanceof Error ? error.message : String(error)}`, { notify: false });
       
       setFeedback({
         type: 'error',

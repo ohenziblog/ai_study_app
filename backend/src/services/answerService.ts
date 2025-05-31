@@ -1,13 +1,13 @@
 // 変数名を変更して名前衝突を避ける
-const dataSource = require('../config/DataSource').AppDataSource;
+const answerDataSource = require('../config/DataSource').AppDataSource;
 const RecentQuestion = require('../models/RecentQuestion').RecentQuestion;
 const UserSkillLevel = require('../models/UserSkillLevel').UserSkillLevel;
 const irtService = require('./irtService');
 const answerServiceLogger = require('../utils/logger').default;  // 変数名を変更
 
 // リポジトリの取得
-const recentQuestionRepository = dataSource.getRepository(RecentQuestion);
-const userSkillLevelRepository = dataSource.getRepository(UserSkillLevel);
+const recentQuestionRepository = answerDataSource.getRepository(RecentQuestion);
+const userSkillLevelRepository = answerDataSource.getRepository(UserSkillLevel);
 
 /**
  * 回答に関する操作を提供するサービス
@@ -28,7 +28,7 @@ const answerService = {
     timeTaken: number
   ) => {
     // トランザクション開始
-    const queryRunner = dataSource.createQueryRunner();
+    const queryRunner = answerDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     
@@ -87,8 +87,8 @@ const answerService = {
         
         if (!userSkillLevel) {
           // ユーザーのスキルレベルが存在しない場合は新規作成
-          const user = await dataSource.getRepository('User').findOne({ where: { userId: userId } });
-          const skill = await dataSource.getRepository('Skill').findOne({ where: { skillId: question.skillId } });
+          const user = await answerDataSource.getRepository('User').findOne({ where: { userId: userId } });
+          const skill = await answerDataSource.getRepository('Skill').findOne({ where: { skillId: question.skillId } });
           
           if (!user || !skill) {
             throw new Error('ユーザーまたはスキルが見つかりません');
@@ -205,7 +205,7 @@ const answerService = {
    */
   recordAnswer: async (questionId: number, userId: number, answerText: string, isCorrect: boolean, timeTaken: number) => {
     // トランザクション開始
-    const queryRunner = dataSource.createQueryRunner();
+    const queryRunner = answerDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     
@@ -250,8 +250,8 @@ const answerService = {
         
         if (!userSkillLevel) {
           // ユーザーのスキルレベルが存在しない場合は新規作成
-          const user = await dataSource.getRepository('User').findOne({ where: { userId: userId } });
-          const skill = await dataSource.getRepository('Skill').findOne({ where: { skillId: question.skillId } });
+          const user = await answerDataSource.getRepository('User').findOne({ where: { userId: userId } });
+          const skill = await answerDataSource.getRepository('Skill').findOne({ where: { skillId: question.skillId } });
           
           if (!user || !skill) {
             throw new Error('ユーザーまたはスキルが見つかりません');

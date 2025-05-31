@@ -39,6 +39,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "@ai-study-app/shared-types": "file:../shared-types",
     "axios": "^1.8.3",
     "bcryptjs": "^3.0.2",
     "class-validator": "^0.14.1",

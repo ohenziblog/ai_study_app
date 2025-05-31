@@ -47,14 +47,12 @@ export const Dashboard = () => {
           setSkillLevels(response.data.data);
         } else {
           // レスポンスが成功だが、データが不適切な場合
-          logger.warn('スキルレベルのデータが正しい形式ではありません', { notify: false });
+          logger.warn('スキルレベルのデータが正しい形式ではありません');
           setSkillLevels([]);
         }
       } catch (error) {
         // axiosインターセプターで既に通知されているため、ここでは再通知しない
-        logger.error('スキルレベルの取得に失敗しました', { 
-          notify: false  // 通知は行わない（インターセプターで既に通知されている）
-        });
+        logger.error(`スキルレベルの取得に失敗しました: ${error instanceof Error ? error.message : String(error)}`, { notify: false });
       } finally {
         setIsLoading(false);
       }

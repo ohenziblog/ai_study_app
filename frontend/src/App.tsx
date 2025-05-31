@@ -16,7 +16,7 @@ import { QuestionHistory } from './pages/Questions/QuestionHistory';
 import { NotFound } from './pages/NotFound';
 
 // 保護されたルート用のラッパーコンポーネント
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {

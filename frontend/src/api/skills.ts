@@ -48,7 +48,7 @@ export const skillApi = {
     const response = await apiClient.get<ApiResponse<Skill>>(`/skills/${id}`);
     
     if (response.data.success && response.data.data) {
-      logger.info(`スキル取得成功 - ID: ${id}, 名前: ${response.data.data.skillName}`);
+      logger.info(`スキル取得成功 - ID: ${id}, 名前: ${response.data.data.name}`);
       return response.data.data;
     }
     

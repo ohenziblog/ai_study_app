@@ -521,7 +521,7 @@ const questionService = {
       });
 
       // マッピング処理をキャメルケースに統一
-      return questions.map((q: QuestionHistory) => ({
+      return questions.map((q: any) => ({
         questionId: q.historyId,
         questionHash: q.questionHash,
         questionText: q.questionText,
