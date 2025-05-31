@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 
+// shared-typesから型をインポート
 interface CardProps {
   title?: string;
   children: ReactNode;

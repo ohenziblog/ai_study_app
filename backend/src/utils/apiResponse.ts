@@ -1,26 +1,8 @@
-/**
- * API応答の標準フォーマット
- */
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: string[];
-}
+// shared-typesから型定義をインポート
+import { ApiResponse, HTTPTypes } from '@ai-study-app/shared-types';
 
-/**
- * エラー種別とHTTPステータスコードのマッピング
- */
-export const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  INTERNAL_ERROR: 500
-};
+// HTTPステータスコードをshared-typesから使用
+export const HTTP_STATUS = HTTPTypes.HTTP_STATUS;
 
 /**
  * 標準化されたAPIレスポンスを作成する
@@ -35,13 +17,10 @@ export const createApiResponse = <T>(
   data?: T,
   errors?: string[]
 ): ApiResponse<T> => {
-  const response: ApiResponse<T> = {
+  return {
     success,
-    message
+    message,
+    data,
+    errors
   };
-  
-  if (data !== undefined) response.data = data;
-  if (errors && errors.length > 0) response.errors = errors;
-  
-  return response;
 };

@@ -5,6 +5,7 @@ import { useQuestionHistory } from '../../hooks/useQuestions';
 import { useCategories } from '../../hooks/useCategories';
 import { Card } from '../../components/common/Card';
 import apiClient from '../../api/axios';
+import logger from '../../utils/logger';
 
 // ユーザースキルレベルの型
 interface UserSkillLevel {
@@ -27,20 +28,38 @@ export const Dashboard = () => {
   useEffect(() => {
     const fetchUserSkillLevels = async () => {
       try {
-        // このエンドポイントは実際のバックエンドに合わせて調整が必要
-        const response = await apiClient.get('/users/skill-levels');
+        if (!user?.userId) {
+          logger.error('ユーザーIDが見つかりません', { notify: false });
+          setIsLoading(false);
+          return;
+        }
+        
+        logger.debug(`ユーザースキルレベル取得開始 - ユーザーID: ${user.userId}`);
+        // ユーザーIDをクエリパラメータとして追加
+        // 文字列型に確実に変換して送信
+        const userId = String(user.userId);
+        const response = await apiClient.get(`/users/skill-levels`, { 
+          params: { userId }
+        });
+        
         if (response.data.success && response.data.data) {
+          logger.info(`スキルレベル取得成功 - ${response.data.data.length}件のスキルデータを取得`);
           setSkillLevels(response.data.data);
+        } else {
+          // レスポンスが成功だが、データが不適切な場合
+          logger.warn('スキルレベルのデータが正しい形式ではありません');
+          setSkillLevels([]);
         }
       } catch (error) {
-        console.error('スキルレベルの取得に失敗しました', error);
+        // axiosインターセプターで既に通知されているため、ここでは再通知しない
+        logger.error(`スキルレベルの取得に失敗しました: ${error instanceof Error ? error.message : String(error)}`, { notify: false });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserSkillLevels();
-  }, []);
+  }, [user]); // userを依存配列に追加
 
   // スキルレベルをIRT値から分かりやすい表現に変換
   const getSkillLevelText = (level: number): string => {
@@ -60,6 +79,7 @@ export const Dashboard = () => {
 
   // ロード中表示
   if ((historyLoading || categoriesLoading || isLoading) && !recentHistory && !categories) {
+    logger.debug('ダッシュボードデータ読込中...');
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
@@ -67,6 +87,7 @@ export const Dashboard = () => {
     );
   }
 
+  logger.debug(`ダッシュボード表示 - スキルレベル: ${skillLevels.length}件, 履歴: ${recentHistory?.length || 0}件`);
   return (
     <div>
       <div className="mb-10 text-center">

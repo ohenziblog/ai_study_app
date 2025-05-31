@@ -1,19 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { questionApi } from '../api/questions';
 import type { 
-  Question, 
-  MultipleChoiceQuestion, 
+  QuestionWithChoices,
   AnswerRequest, 
-  MultipleChoiceAnswerRequest 
-} from '../types/api';
+  MultipleChoiceAnswerRequest
+} from '@ai-study-app/shared-types';
+import logger from '../utils/logger';
 
 // 問題を取得するためのフック
 export const useQuestion = (categoryId?: number, skillId?: number) => {
-  return useQuery<Question | MultipleChoiceQuestion, Error>({
+  return useQuery<QuestionWithChoices, Error>({
     queryKey: ['question', { categoryId, skillId }],
-    queryFn: () => questionApi.getQuestion(categoryId, skillId),
+    queryFn: async () => {
+      logger.debug(`問題取得中 - カテゴリID: ${categoryId || '未指定'}, スキルID: ${skillId || '未指定'}`);
+      try {
+        const question = await questionApi.getQuestion(categoryId, skillId);
+        logger.debug(`問題取得成功 - タイプ: ${isMultipleChoiceQuestion(question) ? '選択式' : '記述式'}`);
+        return question;
+      } catch (error) {
+        logger.error('問題取得中にエラーが発生しました', { notify: false });
+        throw error;
+      }
+    },
     staleTime: 0, // 常に新しい問題を取得
-    cacheTime: 0, // キャッシュしない
+    gcTime: 0, // キャッシュしない
     retry: false,
   });
 };
@@ -22,7 +32,17 @@ export const useQuestion = (categoryId?: number, skillId?: number) => {
 export const useQuestionHistory = (limit: number = 10) => {
   return useQuery({
     queryKey: ['questionHistory', limit],
-    queryFn: () => questionApi.getQuestionHistory(limit),
+    queryFn: async () => {
+      logger.debug(`問題履歴取得中 - 件数上限: ${limit}`);
+      try {
+        const history = await questionApi.getQuestionHistory(limit);
+        logger.debug(`問題履歴取得成功 - ${history.length}件取得`);
+        return history;
+      } catch (error) {
+        logger.error('問題履歴取得中にエラーが発生しました', { notify: false });
+        throw error;
+      }
+    },
     staleTime: 60 * 1000, // 1分間キャッシュ
   });
 };
@@ -32,9 +52,20 @@ export const useSubmitAnswer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: AnswerRequest) => questionApi.submitAnswer(data),
+    mutationFn: async (data: AnswerRequest) => {
+      logger.debug(`回答送信中 - 問題ID: ${data.questionId}`);
+      try {
+        const result = await questionApi.submitAnswer(data);
+        logger.info(`回答送信成功 - 結果: ${result.question.isCorrect ? '正解' : '不正解'}`);
+        return result;
+      } catch (error) {
+        logger.error('回答送信中にエラーが発生しました', { notify: false });
+        throw error;
+      }
+    },
     onSuccess: () => {
       // 履歴キャッシュを無効化して再取得を促す
+      logger.debug('問題履歴キャッシュを更新');
       queryClient.invalidateQueries({ queryKey: ['questionHistory'] });
     },
   });
@@ -45,10 +76,20 @@ export const useSubmitMultipleChoiceAnswer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: MultipleChoiceAnswerRequest) => 
-      questionApi.submitMultipleChoiceAnswer(data),
+    mutationFn: async (data: MultipleChoiceAnswerRequest) => {
+      logger.debug(`選択肢回答送信中 - 問題ID: ${data.questionId}, 選択肢: ${data.selectedOptionIndex}`);
+      try {
+        const result = await questionApi.submitMultipleChoiceAnswer(data);
+        logger.info(`選択肢回答送信成功 - 結果: ${result.isCorrect ? '正解' : '不正解'}`);
+        return result;
+      } catch (error) {
+        logger.error('選択肢回答送信中にエラーが発生しました', { notify: false });
+        throw error;
+      }
+    },
     onSuccess: () => {
       // 履歴キャッシュを無効化して再取得を促す
+      logger.debug('問題履歴キャッシュを更新');
       queryClient.invalidateQueries({ queryKey: ['questionHistory'] });
     },
   });
@@ -56,7 +97,7 @@ export const useSubmitMultipleChoiceAnswer = () => {
 
 // 4択問題かどうかを判定するユーティリティ関数
 export const isMultipleChoiceQuestion = (
-  question: Question | MultipleChoiceQuestion
-): question is MultipleChoiceQuestion => {
-  return 'options' in question && Array.isArray((question as MultipleChoiceQuestion).options);
+  question: QuestionWithChoices
+): boolean => {
+  return question.options && Array.isArray(question.options) && question.options.length > 0;
 };

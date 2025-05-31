@@ -506,12 +506,12 @@ const questionService = {
   },
   
   /**
-   * ユーザーの最近の問題履歴を取得する
+   * ユーザーの問題履歴を取得する
    * @param userId ユーザーID
    * @param limit 取得する履歴の数
-   * @returns 最近の問題履歴
+   * @returns 問題履歴
    */
-  getUserRecentQuestions: async (userId: number, limit: number = 10): Promise<QuestionHistoryResponse[]> => {
+  getQuestionHistory: async (userId: number, limit: number = 10): Promise<QuestionHistoryResponse[]> => {
     try {
       const questions = await recentQuestionRepository.find({
         where: { user: { userId: userId } },
@@ -521,7 +521,7 @@ const questionService = {
       });
 
       // マッピング処理をキャメルケースに統一
-      return questions.map((q: QuestionHistory) => ({
+      return questions.map((q: any) => ({
         questionId: q.historyId,
         questionHash: q.questionHash,
         questionText: q.questionText,

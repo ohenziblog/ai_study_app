@@ -1,141 +1,29 @@
-// API応答の標準型
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: string[];
+// shared-typesから型をインポート
+export type {
+  User,
+  Category,
+  Skill,
+  QuestionHistory,
+  UserSkillLevel,
+  SafeUser,
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  QuestionWithChoices,
+  AnswerRequest,
+  MultipleChoiceAnswerRequest,
+  AnswerResponse,
+  MultipleChoiceAnswerResponse,
+  ApiResponse
+} from '@ai-study-app/shared-types';
+
+import { QuestionEntity } from '@ai-study-app/shared-types';
+
+// 便利な型ガード関数をエクスポート
+export function isMultipleChoiceQuestion(question: any): question is QuestionEntity.QuestionWithChoices {
+  return question && typeof question.correctOptionIndex === 'number' && Array.isArray(question.options);
 }
 
-// ユーザー関連の型
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: string;
-  isActive: boolean;
-}
-
-// 認証関連の型
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-}
-
-// カテゴリー関連の型
-export interface Category {
-  id: number;
-  name: string;
-  description: string;
-  parentId?: number;
-  level: number;
-}
-
-// スキル関連の型
-export interface Skill {
-  id: number;
-  name: string;
-  description: string;
-  categoryId: number;
-  difficulty: number;
-  category?: {
-    id: number;
-    name: string;
-  };
-}
-
-// 問題関連の型
-export interface Question {
-  questionId: number;
-  questionHash: string;
-  questionText: string;
-  category?: {
-    id: number;
-    name: string;
-  };
-  skill?: {
-    id: number;
-    name: string;
-  };
-  difficulty: number;
-}
-
-// 4択問題の型（Question型を拡張）
-export interface MultipleChoiceQuestion extends Question {
-  options: string[];
-  correctOptionIndex: number;
-  explanation: string;
-}
-
-// 回答関連の型
-export interface AnswerRequest {
-  questionId: number;
-  answerText: string;
-  isCorrect: boolean;
-  timeTaken?: number;
-}
-
-// 選択式回答のリクエスト
-export interface MultipleChoiceAnswerRequest {
-  questionId: number;
-  selectedOptionIndex: number;
-  timeTaken?: number;
-}
-
-export interface AnswerResponse {
-  question: {
-    id: number;
-    text: string;
-    answer: string;
-    isCorrect: boolean;
-    askedAt: string;
-    answeredAt: string;
-    timeTaken: number;
-  };
-  skillLevel?: {
-    skillId: number;
-    skillName: string;
-    level: number;
-    confidence: number;
-    totalAttempts: number;
-    correctAttempts: number;
-  };
-}
-
-// 選択式回答のレスポンス
-export interface MultipleChoiceAnswerResponse {
-  question: {
-    id: number;
-    text: string;
-    options: string[];
-    selectedOptionIndex: number;
-    correctOptionIndex: number;
-    explanation: string;
-    isCorrect: boolean;
-    askedAt: string;
-    answeredAt: string;
-    timeTaken: number;
-  };
-  skillLevel?: {
-    skillId: number;
-    skillName: string;
-    level: number;
-    confidence: number;
-    totalAttempts: number;
-    correctAttempts: number;
-  };
-}
+// レガシーな型名のエイリアス（既存コードとの互換性のため）
+export type Question = QuestionEntity.QuestionWithChoices;
+export type MultipleChoiceQuestion = QuestionEntity.QuestionWithChoices;

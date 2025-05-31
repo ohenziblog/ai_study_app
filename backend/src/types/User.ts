@@ -1,69 +1,16 @@
-/**
- * ユーザー型定義
- * TypeORM User エンティティの型情報
- */
-export interface User {
-  user_id: number;
-  username: string;
-  email: string;
-  passwordHash: string;
-  firstName?: string;
-  lastName?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  lastLoginAt?: Date;
-  isActive: boolean;
-  role: string;
-  settings: object;
-}
+// shared-typesから型定義をインポート
+import { UserEntity, AuthAPI } from '@ai-study-app/shared-types';
+export * from '@ai-study-app/shared-types';
 
-/**
- * ユーザー作成リクエスト型
- */
-export interface CreateUserDto {
-  username: string;
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-  role?: string;
-}
+// 既存のコードとの互換性のために型を再エクスポート
+export type {
+  UserEntity,
+  AuthAPI
+} from '@ai-study-app/shared-types';
 
-/**
- * ユーザー更新リクエスト型
- */
-export interface UpdateUserDto {
-  username?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  isActive?: boolean;
-}
-
-/**
- * ユーザー登録リクエスト型
- */
-export interface RegisterDTO {
-  username: string;
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-/**
- * パスワード情報を除いた安全なユーザー型
- */
-export interface SafeUser {
-  user_id: number;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  lastLoginAt?: Date;
-  settings: object;
-}
+// 既存のコードで使用されている型のエイリアス
+export type User = UserEntity.User;
+export type CreateUserDto = UserEntity.CreateUserDto;
+export type UpdateUserDto = UserEntity.UpdateUserDto;
+export type SafeUser = UserEntity.SafeUser;
+export type RegisterDTO = AuthAPI.RegisterDTO;

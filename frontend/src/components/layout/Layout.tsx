@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navbar } from './Navbar';
 
+// shared-typesから型をインポート
 interface LayoutProps {
   children: ReactNode;
 }

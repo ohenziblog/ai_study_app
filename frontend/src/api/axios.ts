@@ -1,9 +1,12 @@
 import axios from 'axios';
 import { HTTP_ERROR_MESSAGES, NETWORK_ERROR_MESSAGES } from '../constants/errorMessages';
 import { notifyError, notifyHttpError } from '../utils/notifications';
+import logger from '../utils/logger';
 
 // 環境変数からベースURLを取得（ハードコーディングを避ける）
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+logger.info(`APIクライアント初期化: ${BASE_URL}`);
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -19,19 +22,32 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    logger.debug(`API リクエスト: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    logger.error('APIリクエスト処理中にエラーが発生しました', { 
+      notify: false // すでにレスポンスインターセプターで通知されるため
+    });
+    return Promise.reject(error);
+  }
 );
 
 // レスポンスインターセプター（強化版）
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    logger.debug(`API レスポンス成功: ${response.config.method?.toUpperCase()} ${response.config.url}`);
+    return response;
+  },
   (error) => {
     // レスポンスが存在する場合のみステータスコードを取得
     const statusCode = error.response?.status;
     
     if (error.response) {
+      logger.error(`API エラー [${statusCode}]: ${error.response.config.method?.toUpperCase()} ${error.response.config.url}`, {
+        notify: false // 後続の処理で通知するため
+      });
+      
       // 様々なエラーコードに対応するswitch文
       switch (statusCode) {
         case 401:
@@ -64,9 +80,11 @@ apiClient.interceptors.response.use(
       }
     } else if (error.request) {
       // リクエストを送信したがレスポンスを受け取れなかった場合
+      logger.error('ネットワーク接続エラー: レスポンスが受信されませんでした', { notify: false });
       notifyError(NETWORK_ERROR_MESSAGES.connection);
     } else {
       // リクエストの設定時にエラーが発生した場合
+      logger.error(`通信エラー: ${error.message}`, { notify: false });
       notifyError(`通信エラー: ${error.message}`);
     }
     
