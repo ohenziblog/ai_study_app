@@ -1,11 +1,12 @@
 // shared-typesから型定義をインポート
-import { UserEntity, AuthAPI } from '@ai-study-app/shared-types';
+import { UserEntity, AuthAPI, UserAPI } from '@ai-study-app/shared-types';
 export * from '@ai-study-app/shared-types';
 
 // 既存のコードとの互換性のために型を再エクスポート
 export type {
   UserEntity,
-  AuthAPI
+  AuthAPI,
+  UserAPI,
 } from '@ai-study-app/shared-types';
 
 // 既存のコードで使用されている型のエイリアス

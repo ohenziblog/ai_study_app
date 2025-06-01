@@ -94,6 +94,11 @@ const skillController = {
   },
 
   /**
+   * ユーザごとのスキルレベルを取得
+   * @route GET /skills/user/:userId
+   */
+
+  /**
    * 新しいスキルを作成（管理者用）
    * @route POST /skills
    */

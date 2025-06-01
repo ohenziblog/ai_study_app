@@ -83,7 +83,7 @@ const userController = {
     } catch (error) {
       logger.error(`ユーザースキルレベル取得中にエラーが発生しました: ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
-        createApiResponse(false, 'サーバーエラーが発生しました')
+        createApiResponse(false, 'ユーザースキルレベル取得中にサーバーエラーが発生しました')
       );
     }
   },
