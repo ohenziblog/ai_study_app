@@ -1,11 +1,14 @@
 import type { User } from '../types/User';
+import type { UserAPI } from '../types/User'
 
 const { AppDataSource } = require('../config/DataSource');
 const { User: UserEntity } = require('../models/User');
+const { UserSkillLevel } = require('../models/UserSkillLevel');
 const logger = require('../utils/logger').default;
 
-// Userエンティティのリポジトリを取得
+// 必要なリポジトリを取得
 const userRepository = AppDataSource.getRepository(UserEntity);
+const userSkillLevelRepository = AppDataSource.getRepository(UserSkillLevel);
 
 /**
  * ユーザーに関連する操作を提供するサービス
@@ -81,29 +84,31 @@ const userService = {
   /**
    * 指定されたユーザーのスキルレベルを取得
    */
-  getUserSkillLevels: async (userId: number): Promise<any[]> => {
+  getUserSkillLevels: async (userId: number): Promise<UserAPI.UserSkillLevelResponse[]> => {
     try {
-      // TODO: UserSkillLevelエンティティとの関連を実装
-      // 現在は仮のデータを返す
       logger.info(`ユーザーID: ${userId} のスキルレベルを取得中...`);
+
+      // UserSkillLevelエンティティからデータを取得（関連エンティティも含む）
+      const skillLevels = await userSkillLevelRepository.find({
+        where: { user: { userId: userId } },
+        relations: ['skill', 'skill.category'] // 関連エンティティを取得
+      });
+
+      console.log("取得したスキルレベル:", skillLevels);
+
+      // エンティティデータをAPIレスポンス形式に変換（型安全）
+      const result: UserAPI.UserSkillLevelResponse[] = skillLevels.map((usl: any) => ({
+        skillId: usl.skill.skillId,
+        skillName: usl.skill.skillName,
+        categoryName: usl.skill.category.categoryName,
+        skillLevel: usl.skillLevel,
+        totalAttempts: usl.totalAttempts,
+        correctAttempts: usl.correctAttempts
+      }));
+
+      console.log("変換後のスキルレベル:", result);
       
-      // 仮のスキルレベルデータ
-      const mockSkillLevels = [
-        {
-          skillId: 1,
-          skillName: 'JavaScript',
-          level: 3,
-          experience: 150
-        },
-        {
-          skillId: 2,
-          skillName: 'TypeScript',
-          level: 2,
-          experience: 80
-        }
-      ];
-      
-      return mockSkillLevels;
+      return result;
     } catch (error) {
       logger.error(`ユーザーID: ${userId} のスキルレベル取得中にエラーが発生しました: ${error}`);
       throw error;

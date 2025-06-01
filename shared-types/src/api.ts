@@ -53,12 +53,12 @@ export namespace UserAPI {
   }
 
   export interface UserSkillLevelResponse {
-    skill_id: number;
-    skill_name: string;
-    category_name: string;
-    skill_level: number;
-    total_attempts: number;
-    correct_attempts: number;
+    skillId: number;
+    skillName: string;
+    categoryName: string;
+    skillLevel: number;
+    totalAttempts: number;
+    correctAttempts: number;
   }
 
   export interface CreateUserRequest {

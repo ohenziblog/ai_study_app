@@ -13,17 +13,17 @@ const router = Router();
 router.get('/', userController.getAllUsers);
 
 /**
- * @route GET /users/:id
- * @desc 指定されたIDのユーザーを取得
- */
-router.get('/:id', userController.getUserById);
-
-/**
  * @route GET /users/skill-levels
  * @desc ユーザーのスキルレベルを取得
  * @param {string} userId - クエリパラメータでユーザーのIDを指定
  */
 router.get('/skill-levels', userController.getUserSkillLevels);
+
+/**
+ * @route GET /users/:id
+ * @desc 指定されたIDのユーザーを取得
+ */
+router.get('/:id', userController.getUserById);
 
 /**
  * @route POST /users

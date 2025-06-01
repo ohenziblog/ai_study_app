@@ -9,12 +9,12 @@ import logger from '../../utils/logger';
 
 // ユーザースキルレベルの型
 interface UserSkillLevel {
-  skill_id: number;
-  skill_name: string;
-  category_name: string;
-  skill_level: number;
-  total_attempts: number;
-  correct_attempts: number;
+  skillId: number;
+  skillName: string;
+  categoryName: string;
+  skillLevel: number;
+  totalAttempts: number;
+  correctAttempts: number;
 }
 
 export const Dashboard = () => {
@@ -34,7 +34,6 @@ export const Dashboard = () => {
           return;
         }
         
-        logger.debug(`ユーザースキルレベル取得開始 - ユーザーID: ${user.userId}`);
         // ユーザーIDをクエリパラメータとして追加
         // 文字列型に確実に変換して送信
         const userId = String(user.userId);
@@ -104,17 +103,17 @@ export const Dashboard = () => {
           {skillLevels.length > 0 ? (
             <div className="space-y-4">
               {skillLevels.slice(0, 5).map((skill) => (
-                <div key={skill.skill_id} className="flex justify-between items-center">
+                <div key={skill.skillId} className="flex justify-between items-center">
                   <div>
-                    <p className="font-medium">{skill.skill_name}</p>
-                    <p className="text-sm text-gray-500">{skill.category_name}</p>
+                    <p className="font-medium">{skill.skillName}</p>
+                    <p className="text-sm text-gray-500">{skill.categoryName}</p>
                   </div>
                   <div className="text-right">
                     <span className="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded text-sm font-medium">
-                      {getSkillLevelText(skill.skill_level)}
+                      {getSkillLevelText(skill.skillLevel)}
                     </span>
                     <p className="text-sm text-gray-500 mt-1">
-                      正答率: {getCorrectRate(skill.total_attempts, skill.correct_attempts)}
+                      正答率: {getCorrectRate(skill.totalAttempts, skill.correctAttempts)}
                     </p>
                   </div>
                 </div>
