@@ -1,4 +1,4 @@
-import type { User, SafeUser, RegisterDTO } from '../types/User';
+import type { User, SafeUser, RegisterDTO } from '../types';
 
 const { AppDataSource } = require('../config/DataSource');
 const { User: UserEntity } = require('../models/User');
@@ -14,9 +14,21 @@ const userRepository = AppDataSource.getRepository(UserEntity);
  * @param user ユーザーエンティティ
  * @returns パスワード情報を除いたユーザーオブジェクト
  */
-const createSafeUser = (user: User): SafeUser => {
-  const { passwordHash, ...safeUser } = user;
-  return safeUser as SafeUser;
+const createSafeUser = (user: any): SafeUser => {
+  // 型安全性を保つために明示的にプロパティをマップ
+  return {
+    userId: user.userId,
+    username: user.username,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    isActive: user.isActive,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    lastLoginAt: user.lastLoginAt,
+    settings: user.settings
+  } as SafeUser;
 };
 
 /**
@@ -61,9 +73,9 @@ const authService = {
       const savedUser = await userRepository.save(newUser);
       logger.info(`新規ユーザーが登録されました: ${savedUser.email}`);
 
-      // JWTトークンの生成 - user_id に名前を統一
+      // JWTトークンの生成
       const token = jwtUtils.generateToken({
-        user_id: savedUser.user_id,
+        userId: savedUser.userId,
         role: savedUser.role
       });
 
@@ -118,9 +130,9 @@ const authService = {
       user.lastLoginAt = new Date();
       await userRepository.save(user);
 
-      // JWTトークンの生成 - user_id に名前を統一
+      // JWTトークンの生成
       const token = jwtUtils.generateToken({
-        user_id: user.user_id,
+        userId: user.userId,
         role: user.role
       });
 

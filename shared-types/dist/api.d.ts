@@ -41,12 +41,12 @@ export declare namespace UserAPI {
         userId: string;
     }
     interface UserSkillLevelResponse {
-        skill_id: number;
-        skill_name: string;
-        category_name: string;
-        skill_level: number;
-        total_attempts: number;
-        correct_attempts: number;
+        skillId: number;
+        skillName: string;
+        categoryName: string;
+        skillLevel: number;
+        totalAttempts: number;
+        correctAttempts: number;
     }
     interface CreateUserRequest {
         username: string;
@@ -144,7 +144,7 @@ export declare namespace SkillAPI {
     }
 }
 export interface SafeUser {
-    user_id: number;
+    userId: number;
     username: string;
     email: string;
     firstName?: string;
@@ -188,8 +188,8 @@ export interface User {
     settings: object;
 }
 export interface QuestionHistory {
-    question_id: number;
-    question_text: string;
+    questionId: number;
+    questionText: string;
     category?: {
         id: number;
         name: string;
@@ -198,18 +198,18 @@ export interface QuestionHistory {
         id: number;
         name: string;
     };
-    is_correct: boolean | null;
-    asked_at: string;
-    answered_at?: string;
-    time_taken?: number;
+    isCorrect: boolean | null;
+    askedAt: string;
+    answeredAt?: string;
+    timeTaken?: number;
 }
 export interface UserSkillLevel {
-    skill_id: number;
-    skill_name: string;
-    category_name: string;
-    skill_level: number;
-    total_attempts: number;
-    correct_attempts: number;
+    skillId: number;
+    skillName: string;
+    categoryName: string;
+    skillLevel: number;
+    totalAttempts: number;
+    correctAttempts: number;
 }
 export interface LoginRequest {
     email: string;

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { AuthRequest } from '../types/express';
+import type { AuthRequest } from '../types';
 
 const { Router } = require('express');
 const categoryController = require('../controllers/categoryController');

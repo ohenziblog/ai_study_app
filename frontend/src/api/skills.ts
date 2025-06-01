@@ -1,5 +1,5 @@
 import apiClient from './axios';
-import type { Skill, ApiResponse } from '../types/api';
+import type { Skill, ApiResponse } from '../types';
 import logger from '../utils/logger';
 
 /**

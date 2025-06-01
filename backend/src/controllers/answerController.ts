@@ -1,7 +1,7 @@
 import type { Response } from 'express';
-import type { AuthRequest } from '../types/express';
+import type { AuthRequest } from '../types';
 import { HTTP_STATUS, createApiResponse } from '../utils/apiResponse';
-import type { AnswerRequest } from '../types/Question';
+import type { AnswerRequest } from '../types';
 
 const answerService = require('../services/answerService');
 const logger = require('../utils/logger').default;

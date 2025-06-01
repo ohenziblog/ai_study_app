@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { AuthRequest } from '../types/express';
+import type { AuthRequest } from '../types';
 import { HTTP_STATUS, createApiResponse } from '../utils/apiResponse';
 
 const skillService = require('../services/skillService');
@@ -111,17 +111,17 @@ const skillController = {
         );
       }
 
-      const { skill_name, description, category_id, difficultyBase } = req.body;
+      const { skillName, description, categoryId, difficultyBase } = req.body;
       
       // 基本バリデーション
-      if (!skill_name || !category_id) {
+      if (!skillName || !categoryId) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           createApiResponse(false, 'スキル名とカテゴリーIDは必須です')
         );
       }
 
       // カテゴリーの存在確認
-      const category = await categoryService.findById(parseInt(category_id));
+      const category = await categoryService.findById(parseInt(categoryId));
       if (!category) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           createApiResponse(false, '指定されたカテゴリーが存在しません')
@@ -129,7 +129,7 @@ const skillController = {
       }
 
       // 同じカテゴリー内での重複スキル名チェック
-      const existingSkill = await skillService.findByNameAndCategory(skill_name, parseInt(category_id));
+      const existingSkill = await skillService.findByNameAndCategory(skillName, parseInt(categoryId));
       if (existingSkill) {
         return res.status(HTTP_STATUS.CONFLICT).json(
           createApiResponse(false, '同じカテゴリー内に同名のスキルが既に存在します')
@@ -137,14 +137,14 @@ const skillController = {
       }
 
       const skillData = {
-        skill_name,
+        skillName,
         description,
-        category_id: parseInt(category_id),
+        categoryId: parseInt(categoryId),
         difficultyBase: difficultyBase ? parseFloat(difficultyBase) : 2.0
       };
 
       const newSkill = await skillService.create(skillData);
-      logger.info(`新しいスキルが作成されました: ${skill_name} (カテゴリーID: ${category_id})`);
+      logger.info(`新しいスキルが作成されました: ${skillName} (カテゴリーID: ${categoryId})`);
       
       return res.status(HTTP_STATUS.CREATED).json(
         createApiResponse(true, 'スキルが作成されました', newSkill)
@@ -186,8 +186,8 @@ const skillController = {
       }
 
       // カテゴリーが変更される場合は存在確認
-      if (req.body.category_id && req.body.category_id !== skill.category?.categoryId) {
-        const category = await categoryService.findById(parseInt(req.body.category_id));
+      if (req.body.categoryId && req.body.categoryId !== skill.category?.categoryId) {
+        const category = await categoryService.findById(parseInt(req.body.categoryId));
         if (!category) {
           return res.status(HTTP_STATUS.BAD_REQUEST).json(
             createApiResponse(false, '指定されたカテゴリーが存在しません')
@@ -196,9 +196,9 @@ const skillController = {
       }
 
       // 同じカテゴリー内での重複スキル名チェック
-      if (req.body.skill_name && req.body.skill_name !== skill.skillName) {
-        const categoryId = req.body.category_id ? parseInt(req.body.category_id) : skill.category?.categoryId;
-        const existingSkill = await skillService.findByNameAndCategory(req.body.skill_name, categoryId);
+      if (req.body.skillName && req.body.skillName !== skill.skillName) {
+        const categoryId = req.body.categoryId ? parseInt(req.body.categoryId) : skill.category?.categoryId;
+        const existingSkill = await skillService.findByNameAndCategory(req.body.skillName, categoryId);
         
         if (existingSkill && existingSkill.skillId !== id) {
           return res.status(HTTP_STATUS.CONFLICT).json(

@@ -24,19 +24,19 @@ export declare namespace DashboardState {
         error: string | null;
     }
     interface UserSkillLevel {
-        skill_id: number;
-        skill_name: string;
-        category_name: string;
-        skill_level: number;
-        total_attempts: number;
-        correct_attempts: number;
+        skillId: number;
+        skillName: string;
+        categoryName: string;
+        skillLevel: number;
+        totalAttempts: number;
+        correctAttempts: number;
     }
     interface QuestionHistory {
-        question_id: number;
-        question_text: string;
-        is_correct: boolean | null;
-        asked_at: string;
-        answered_at?: string;
+        questionId: number;
+        questionText: string;
+        isCorrect: boolean | null;
+        askedAt: string;
+        answeredAt?: string;
         category?: {
             id: number;
             name: string;

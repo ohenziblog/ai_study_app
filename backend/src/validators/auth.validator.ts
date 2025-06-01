@@ -1,5 +1,5 @@
 import { ValidationResult, createValidationResult, requiredValidator, emailValidator, minLengthValidator } from '../utils/validation';
-import type { RegisterDTO } from '../types/User';
+import type { RegisterDTO } from '../types';
 
 /**
  * ログインリクエスト

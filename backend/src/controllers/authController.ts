@@ -1,5 +1,5 @@
-import type { Request, Response } from 'express';
-import type { RegisterDTO } from '../types/User';
+import type { Request, Response } from '../types';
+import type { RegisterDTO } from '../types';
 import { HTTP_STATUS, createApiResponse } from '../utils/apiResponse';
 import { validateRegisterRequest, validateLoginRequest, LoginRequestDTO } from '../validators/auth.validator';
 

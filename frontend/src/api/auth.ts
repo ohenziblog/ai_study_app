@@ -1,5 +1,5 @@
 import apiClient from './axios';
-import type { LoginRequest, RegisterRequest, AuthResponse, ApiResponse } from '../types/api';
+import type { LoginRequest, RegisterRequest, AuthResponse, ApiResponse } from '../types';
 import logger from '../utils/logger';
 
 /**

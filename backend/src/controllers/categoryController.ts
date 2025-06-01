@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { AuthRequest } from '../types/express';
+import type { AuthRequest } from '../types';
 import { HTTP_STATUS, createApiResponse } from '../utils/apiResponse';
 
 const categoryService = require('../services/categoryService');

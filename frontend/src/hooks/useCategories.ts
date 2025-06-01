@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { categoryApi } from '../api/categories';
-import type { Category } from '../types/api';
+import type { Category, Skill } from '@ai-study-app/shared-types';
 import logger from '../utils/logger';
 
 /**
@@ -39,14 +39,8 @@ export const useCategories = (): UseQueryResult<Category[], Error> => {
  */
 export const useCategoryWithSkills = (categoryId: number | undefined): UseQueryResult<{
   category: Category;
-  skills: Array<{
-    id: number;
-    name: string;
-    description: string;
-    category_id: number;
-    difficulty: number;
-  }>;
-}, Error> => {
+  skills: Skill[];
+} | undefined, Error> => {
   return useQuery({
     queryKey: ['category', categoryId, 'skills'],
     queryFn: async () => {

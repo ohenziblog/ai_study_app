@@ -6,16 +6,10 @@ import { useCategories } from '../../hooks/useCategories';
 import { Card } from '../../components/common/Card';
 import apiClient from '../../api/axios';
 import logger from '../../utils/logger';
+import type { UserAPI } from '../../types'
 
-// ユーザースキルレベルの型
-interface UserSkillLevel {
-  skillId: number;
-  skillName: string;
-  categoryName: string;
-  skillLevel: number;
-  totalAttempts: number;
-  correctAttempts: number;
-}
+// shared-typesから型をインポート
+type UserSkillLevel = UserAPI.UserSkillLevelResponse;
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -145,10 +139,10 @@ export const Dashboard = () => {
           {recentHistory && recentHistory.length > 0 ? (
             <div className="space-y-4">
               {recentHistory.map((item: any) => (
-                <div key={item.question_id} className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+                <div key={item.questionId} className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
                   <div className="flex justify-between items-start">
                     <div className="max-w-xs">
-                      <p className="font-medium truncate">{item.question_text}</p>
+                      <p className="font-medium truncate">{item.questionText}</p>
                       <div className="flex mt-1 space-x-2">
                         <span className="bg-primary bg-opacity-10 text-primary px-2 py-0.5 rounded-full text-xs">
                           {item.category?.name || '不明'}
@@ -160,18 +154,18 @@ export const Dashboard = () => {
                         )}
                       </div>
                     </div>
-                    {item.is_correct !== null && (
+                    {item.isCorrect !== null && (
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.is_correct 
+                        item.isCorrect 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {item.is_correct ? '正解' : '不正解'}
+                        {item.isCorrect ? '正解' : '不正解'}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {new Date(item.asked_at).toLocaleString()}
+                    {new Date(item.askedAt).toLocaleString()}
                   </p>
                 </div>
               ))}

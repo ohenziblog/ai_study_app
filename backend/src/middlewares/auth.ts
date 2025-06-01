@@ -1,5 +1,5 @@
-import type { Response, NextFunction } from 'express';
-import type { AuthRequest } from '../types/express';
+import type { Response, NextFunction } from '../types';
+import type { AuthRequest } from '../types';
 import { HTTP_STATUS, createApiResponse } from '../utils/apiResponse';
 
 const { User } = require('../models/User');
@@ -8,6 +8,7 @@ const jwtUtils = require('../utils/jwt');
 const logger = require('../utils/logger').default;
 
 /**
+ /**
  * JWT認証を検証するミドルウェア
  */
 const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -29,9 +30,9 @@ const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunctio
       );
     }
 
-    // ユーザーをデータベースから取得（user_id フィールドを使用）
+    // ユーザーをデータベースから取得（userId フィールドを使用）
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({ user_id: decoded.user_id });
+    const user = await userRepository.findOneBy({ userId: decoded.userId });
     if (!user) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json(
         createApiResponse(false, 'ユーザーが見つかりません')

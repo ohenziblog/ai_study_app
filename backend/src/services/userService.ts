@@ -1,5 +1,5 @@
-import type { User } from '../types/User';
-import type { UserAPI } from '../types/User'
+import type { User } from '../types';
+import type { UserAPI } from '../types'
 
 const { AppDataSource } = require('../config/DataSource');
 const { User: UserEntity } = require('../models/User');

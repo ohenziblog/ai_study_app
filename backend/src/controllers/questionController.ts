@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import type { AuthRequest } from '../types/express';
+import type { AuthRequest } from '../types';
 import { HTTP_STATUS, createApiResponse } from '../utils/apiResponse';
 
 const questionService = require('../services/questionService');

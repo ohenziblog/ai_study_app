@@ -1,7 +1,7 @@
 import { type EntityManager } from 'typeorm';
 import crypto from 'crypto';
 import { MoreThan, LessThan, Between, In } from 'typeorm';
-import type { Question, QuestionHistory, QuestionHistoryResponse, QuestionWithChoices } from '../types/Question';
+import type { Question, QuestionHistory, QuestionHistoryResponse, QuestionWithChoices, MultipleChoiceQuestion } from '../types';
 
 const { AppDataSource } = require('../config/DataSource');
 const { RecentQuestion } = require('../models/RecentQuestion');
@@ -136,10 +136,9 @@ const questionService = {
       
       await recentQuestionRepository.save(newQuestion);
       
-      // 返り値をキャメルケースに統一
+      // 返り値をMultipleChoiceQuestion型に合わせて調整
       return {
-        questionId: newQuestion.historyId,
-        questionHash: generatedQuestion.hash,
+        id: newQuestion.historyId,
         questionText: generatedQuestion.question,
         options: generatedQuestion.options,
         correctOptionIndex: generatedQuestion.correctAnswerIndex,
@@ -151,8 +150,7 @@ const questionService = {
         skill: {
           id: skill.skillId,
           name: skill.skillName
-        },
-        difficulty: generatedQuestion.difficulty
+        }
       };
     } catch (error) {
       logger.error(`問題生成中にエラーが発生しました: ${error}`);
@@ -483,8 +481,7 @@ const questionService = {
       
       // 返り値をキャメルケースに統一
       return {
-        questionId: newQuestion.historyId,
-        questionHash: questionHash,
+        id: newQuestion.historyId,
         questionText: template.question,
         options: template.options,
         correctOptionIndex: template.correctIndex,
@@ -496,8 +493,7 @@ const questionService = {
         skill: {
           id: skill.skillId,
           name: skill.skillName
-        },
-        difficulty
+        }
       };
     } catch (error) {
       logger.error(`簡易問題生成中にエラーが発生しました: ${error}`);
@@ -520,9 +516,9 @@ const questionService = {
         relations: ['category', 'skill', 'user']
       });
 
-      // マッピング処理をキャメルケースに統一
+      // マッピング処理をAPI型に合わせて調整
       return questions.map((q: any) => ({
-        questionId: q.historyId,
+        questionId: q.historyId,  // フロントエンドとの互換性のためquestionIdを維持
         questionHash: q.questionHash,
         questionText: q.questionText,
         askedAt: q.askedAt,

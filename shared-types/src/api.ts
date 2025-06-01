@@ -177,7 +177,7 @@ export namespace SkillAPI {
 
 // =============== 共通型の再エクスポート ===============
 export interface SafeUser {
-  user_id: number;
+  userId: number;
   username: string;
   email: string;
   firstName?: string;
@@ -229,24 +229,24 @@ export interface User {
 
 // 問題履歴
 export interface QuestionHistory {
-  question_id: number;
-  question_text: string;
+  questionId: number;
+  questionText: string;
   category?: { id: number; name: string };
   skill?: { id: number; name: string };
-  is_correct: boolean | null;
-  asked_at: string;
-  answered_at?: string;
-  time_taken?: number;
+  isCorrect: boolean | null;
+  askedAt: string;
+  answeredAt?: string;
+  timeTaken?: number;
 }
 
 // ユーザースキルレベル
 export interface UserSkillLevel {
-  skill_id: number;
-  skill_name: string;
-  category_name: string;
-  skill_level: number;
-  total_attempts: number;
-  correct_attempts: number;
+  skillId: number;
+  skillName: string;
+  categoryName: string;
+  skillLevel: number;
+  totalAttempts: number;
+  correctAttempts: number;
 }
 
 // 認証リクエスト/レスポンス
